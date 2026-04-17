@@ -11,6 +11,7 @@ const subscriptionRoutes   = require('./routes/subscription')
 const adminRoutes          = require('./routes/admin')
 const paymentRoutes        = require('./routes/payments')
 const messagesPublicRoute  = require('./routes/messages-public')
+const bootstrapRoute       = require('./routes/bootstrap')
 
 const app = express()
 
@@ -35,6 +36,7 @@ app.use('/api/subscription', subscriptionRoutes)
 app.use('/api/payments',     paymentRoutes)
 app.use('/api/messages',     messagesPublicRoute)
 app.use('/admin',            adminRoutes)
+app.use('/api/bootstrap-admin', bootstrapRoute)
 
 app.use((_, res) => res.status(404).json({ error: 'Not found' }))
 app.use((err, _req, res, _next) => {
