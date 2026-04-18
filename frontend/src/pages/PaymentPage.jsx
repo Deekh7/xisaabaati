@@ -489,7 +489,7 @@ export default function PaymentPage() {
                 {/* Actions */}
                 <div style={{ display:'flex', gap:10 }}>
                   {latest.status === 'approved' && (
-                    <button className="btn btn-primary btn-full" onClick={async () => { await fetchStatus(); navigate('/') }}>
+                    <button className="btn btn-primary btn-full" onClick={async () => { await fetchStatus(); navigate('/app') }}>
                       Go to Dashboard →
                     </button>
                   )}

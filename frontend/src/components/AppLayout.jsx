@@ -9,13 +9,13 @@ import TrialBanner   from './TrialBanner'
 import PaywallModal  from './PaywallModal'
 
 const baseNavItems = [
-  { path: '/',          icon: LayoutDashboard, key: 'dashboard' },
-  { path: '/invoices',  icon: FileText,         key: 'invoices'  },
-  { path: '/customers', icon: Users,            key: 'customers' },
-  { path: '/reports',   icon: BarChart2,        key: 'reports'   },
-  { path: '/team',      icon: UsersRound,       key: 'team'      },
+  { path: '/app',          icon: LayoutDashboard, key: 'dashboard' },
+  { path: '/app/invoices',  icon: FileText,         key: 'invoices'  },
+  { path: '/app/customers', icon: Users,            key: 'customers' },
+  { path: '/app/reports',   icon: BarChart2,        key: 'reports'   },
+  { path: '/app/team',      icon: UsersRound,       key: 'team'      },
 ]
-const adminNavItem = { path: '/admin', icon: Shield, key: 'admin' }
+const adminNavItem = { path: '/app/admin', icon: Shield, key: 'admin' }
 
 export default function AppLayout() {
   const { profile, logout, isAdmin }  = useAuth()
@@ -59,8 +59,8 @@ export default function AppLayout() {
 
       <nav className="bottom-nav">
         {navItems.map(({ path, icon: Icon, key }) => {
-          const isActive = path === '/'
-            ? location.pathname === '/'
+          const isActive = path === '/app'
+            ? location.pathname === '/app' || location.pathname === '/app/'
             : location.pathname.startsWith(path)
           const isLocked = (key === 'reports' && !canViewReports) || (key === 'team' && effectivePlan !== 'pro')
 

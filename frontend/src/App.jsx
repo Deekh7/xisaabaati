@@ -3,6 +3,7 @@ import { useAuth }       from './context/AuthContext'
 import AppLayout         from './components/AppLayout'
 import LoginPage         from './pages/LoginPage'
 import SignupPage        from './pages/SignupPage'
+import LandingPage       from './pages/LandingPage'
 import DashboardPage     from './pages/DashboardPage'
 import InvoicesPage      from './pages/InvoicesPage'
 import CustomersPage     from './pages/CustomersPage'
@@ -17,21 +18,27 @@ function PrivateRoute({ children }) {
 }
 function PublicRoute({ children }) {
   const { user } = useAuth()
-  return !user ? children : <Navigate to="/" replace />
+  return !user ? children : <Navigate to="/app" replace />
 }
 function AdminRoute({ children }) {
   const { user, isAdmin } = useAuth()
   if (!user) return <Navigate to="/login" replace />
-  if (!isAdmin) return <Navigate to="/" replace />
+  if (!isAdmin) return <Navigate to="/app" replace />
   return children
+}
+// Root: landing page for guests, dashboard for logged-in users
+function RootRoute() {
+  const { user } = useAuth()
+  return user ? <Navigate to="/app" replace /> : <LandingPage />
 }
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/"       element={<RootRoute />} />
       <Route path="/login"  element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
-      <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+      <Route path="/app"    element={<PrivateRoute><AppLayout /></PrivateRoute>}>
         <Route index              element={<DashboardPage />} />
         <Route path="invoices"    element={<InvoicesPage />} />
         <Route path="customers"   element={<CustomersPage />} />

@@ -77,7 +77,7 @@ export default function LoginPage() {
       setLoading(true)
       try {
         await phoneLogin(phone, next)
-        navigate('/')
+        navigate('/app')
       } catch {
         setShake(true)
         setTimeout(() => { setShake(false); setPin('') }, 700)

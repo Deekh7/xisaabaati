@@ -40,7 +40,7 @@ export default function SignupPage() {
     setLoading(true)
     try {
       await phoneSignup(form.phone, pin, form.businessName, bizType.id)
-      navigate('/')
+      navigate('/app')
     } catch (err) {
       setError(err?.message || t('signupError'))
       toast.error(t('signupError'))
