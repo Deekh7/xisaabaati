@@ -93,12 +93,16 @@ export function AuthProvider({ children }) {
     return signInWithEmailAndPassword(auth, email, password)
   }
 
+  // Firebase requires passwords of at least 6 characters.
+  // A 4-digit PIN is padded to 6 chars by prepending zeros.
+  const pinToPassword = (pin) => String(pin).padStart(6, '0')
+
   const phoneSignup = (phone, pin, businessName, bizType) => {
-    return signup(phoneToEmail(phone), pin, businessName, bizType)
+    return signup(phoneToEmail(phone), pinToPassword(pin), businessName, bizType)
   }
 
   const phoneLogin = (phone, pin) => {
-    return login(phoneToEmail(phone), pin)
+    return login(phoneToEmail(phone), pinToPassword(pin))
   }
 
   const logout = () => {
