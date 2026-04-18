@@ -8,7 +8,7 @@ import { languageFlags, languageNames } from '../i18n/translations'
 const G = '#16a34a'
 const GL = '#f0fdf4'
 
-const PLAN_COLORS = { free: '#6b7280', starter: '#3b82f6', growth: '#8b5cf6', pro: '#10b981' }
+const PLAN_COLORS = { free: '#6b7280', basic: '#3b82f6', pro: '#10b981' }
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -110,21 +110,61 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Admin panel link */}
-      {isAdmin && (
-        <div className="settings-section">
+      {/* Quick links */}
+      <div className="settings-section">
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: '#374151' }}>
+          More
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button
-            onClick={() => navigate('/app/admin')}
+            onClick={() => navigate('/app/customers')}
             style={{
+              display: 'flex', alignItems: 'center', gap: 10,
               width: '100%', background: '#f8fafc', color: '#374151',
-              border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '12px 0',
-              fontWeight: 700, cursor: 'pointer', fontSize: 14,
+              border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '12px 14px',
+              fontWeight: 600, cursor: 'pointer', fontSize: 14, textAlign: 'left',
             }}
           >
-            🛡 {t('admin')}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {t('customers')}
           </button>
+          <button
+            onClick={() => navigate('/app/reports')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              width: '100%', background: '#f8fafc', color: '#374151',
+              border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '12px 14px',
+              fontWeight: 600, cursor: 'pointer', fontSize: 14, textAlign: 'left',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            {t('reports')}
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => navigate('/app/admin')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                width: '100%', background: '#f8fafc', color: '#374151',
+                border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '12px 14px',
+                fontWeight: 600, cursor: 'pointer', fontSize: 14, textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🛡</span>
+              {t('admin')}
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Logout */}
       <button

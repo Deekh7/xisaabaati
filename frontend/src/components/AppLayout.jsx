@@ -32,6 +32,20 @@ const ProductsIcon = ({ active }) => (
     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
   </svg>
 )
+const ExpensesIcon = ({ active }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#f97316' : '#94a3b8'} strokeWidth="2">
+    <rect x="2" y="7" width="20" height="14" rx="2"/>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+)
+const CustomersIcon = ({ active }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? G : '#94a3b8'} strokeWidth="2">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+)
 const ReportsIcon = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? G : '#94a3b8'} strokeWidth="2">
     <line x1="18" y1="20" x2="18" y2="10"/>
@@ -47,11 +61,11 @@ const SettingsIcon = ({ active }) => (
 )
 
 const NAV_ITEMS = [
-  { path: '/app',          exact: true,  labelKey: 'dashboard', Icon: HomeIcon },
-  { path: '/app/sales',   exact: false, labelKey: 'sales',     Icon: SalesIcon },
-  { path: '/app/products',exact: false, labelKey: 'products',  Icon: ProductsIcon },
-  { path: '/app/reports', exact: false, labelKey: 'reports',   Icon: ReportsIcon },
-  { path: '/app/settings',exact: false, labelKey: 'settings',  Icon: SettingsIcon },
+  { path: '/app',           exact: true,  labelKey: 'dashboard', Icon: HomeIcon },
+  { path: '/app/sales',     exact: false, labelKey: 'sales',     Icon: SalesIcon },
+  { path: '/app/products',  exact: false, labelKey: 'products',  Icon: ProductsIcon },
+  { path: '/app/expenses',  exact: false, labelKey: 'expenses',  Icon: ExpensesIcon },
+  { path: '/app/settings',  exact: false, labelKey: 'settings',  Icon: SettingsIcon },
 ]
 
 export default function AppLayout() {
@@ -131,7 +145,7 @@ export default function AppLayout() {
               <Icon active={active} />
               <span
                 className="bottom-nav-label"
-                style={{ color: active ? G : '#94a3b8' }}
+                style={{ color: active ? (labelKey === 'expenses' ? '#f97316' : G) : '#94a3b8' }}
               >
                 {t(labelKey)}
               </span>

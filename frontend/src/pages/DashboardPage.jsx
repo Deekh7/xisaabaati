@@ -53,7 +53,7 @@ function DonutChart({ profit, expenses }) {
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { businessType } = useAuth()
-  const { effectivePlan, salesCount, invoiceLimit } = useSubscription()
+  const { effectivePlan, invoicesCount, invoiceLimit } = useSubscription()
   const { t } = useLang()
   const { sales, loading: sLoading } = useSales()
   const { expenses } = useExpenses()
@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
   const isPlanFree = effectivePlan === 'free'
   const limit = invoiceLimit || 30
-  const usedCount = salesCount || todaySales.length
+  const usedCount = invoicesCount || todaySales.length
 
   if (sLoading) {
     return (
