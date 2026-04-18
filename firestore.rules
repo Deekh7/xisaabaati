@@ -35,14 +35,7 @@ service cloud.firestore {
       allow update, delete: if isAuth() && isOwner();
     }
 
-    // ── sales ────────────────────────────────────────────────────
-    match /sales/{saleId} {
-      allow read:           if isAuth() && isOwner();
-      allow create:         if isAuth() && ownsNew();
-      allow update, delete: if isAuth() && isOwner();
-    }
-
-    // ── invoices (legacy) ─────────────────────────────────────────
+    // ── invoices ─────────────────────────────────────────────────
     match /invoices/{invoiceId} {
       allow read:           if isAuth() && isOwner();
       allow create:         if isAuth() && ownsNew();
