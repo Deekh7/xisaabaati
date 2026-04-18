@@ -4,7 +4,7 @@ backend/node_modules/
 frontend/dist/
 frontend/.vite/
 .env
-frontend/.env
+# frontend/.env is intentionally committed (public Firebase client config)
 backend/.env
 *.env.local
 .firebase/
