@@ -17,3 +17,4 @@ firestore-debug.log
 npm-debug.log*
 *serviceAccount*.json
 *service-account*.json
+PROJECT_CREDENTIALS.md

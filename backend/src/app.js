@@ -16,10 +16,26 @@ const bootstrapRoute       = require('./routes/bootstrap')
 const app = express()
 
 app.use(helmet())
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://xisaabaati.com',
+  'https://www.xisaabaati.com',
+  'https://xisaabaati-fixed.vercel.app',
+  'https://xisaabaati.vercel.app',
+]
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : DEFAULT_ORIGINS
+
+// Accept any *.vercel.app preview deploy + explicit list
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['http://localhost:5173', 'https://xisaabaati.com', 'https://www.xisaabaati.com'],
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true)                          // server-to-server
+    if (allowedOrigins.includes(origin)) return cb(null, true) // explicit list
+    if (origin.endsWith('.vercel.app')) return cb(null, true)  // any preview URL
+    cb(new Error('Not allowed by CORS'))
+  },
   credentials: true,
 }))
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
