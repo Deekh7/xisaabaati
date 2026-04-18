@@ -1,8 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-
-export function phoneToEmail(phone) {
-  return phone.replace(/\D/g, '') + '@xisaabaati.app'
-}
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -10,7 +6,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
 import { auth, db, isFirebaseConfigured } from '../config/firebase'
 
 const AuthContext = createContext()
@@ -32,7 +28,6 @@ export function AuthProvider({ children }) {
           const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
           if (snap.exists()) setProfile(snap.data())
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error('[auth] profile fetch failed:', err)
         }
       } else {
@@ -45,42 +40,35 @@ export function AuthProvider({ children }) {
 
   const requireFirebase = () => {
     if (!isFirebaseConfigured || !auth || !db) {
-      throw new Error(
-        'Firebase is not configured. Set VITE_FIREBASE_* env vars in .env.'
-      )
+      throw new Error('Firebase is not configured. Set VITE_FIREBASE_* env vars in .env.')
     }
   }
 
-  const signup = async (email, password, businessName, bizType = 'other') => {
+  const signup = async (email, password, displayName, businessName, businessType = 'shop') => {
     requireFirebase()
     const cred = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(cred.user, { displayName: businessName })
+    await updateProfile(cred.user, { displayName: displayName || businessName })
 
-    // 14-day trial starts NOW
     const trialEndsAt = new Date()
     trialEndsAt.setDate(trialEndsAt.getDate() + 14)
 
-    // First registered account in an empty deployment becomes admin via
-    // the VITE_BOOTSTRAP_ADMIN_EMAIL allowlist (set this in Vercel env to
-    // your founding admin's email, e.g. you@xisaabaati.com).
     const bootstrapAdmin = (import.meta.env.VITE_BOOTSTRAP_ADMIN_EMAIL || '')
-      .toLowerCase()
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
+      .toLowerCase().split(',').map((s) => s.trim()).filter(Boolean)
     const role = bootstrapAdmin.includes(email.toLowerCase()) ? 'admin' : 'user'
 
     const profileData = {
+      displayName: displayName || businessName,
       businessName,
+      businessType,
       email,
-      bizType,
       role,
       currency: 'USD',
       plan: 'free',
+      planKey: 'free',
       isTrialActive: true,
       trialEndsAt: trialEndsAt.toISOString(),
+      salesCount: 0,
       invoicesCount: 0,
-      extraUsers: 0,
       createdAt: new Date().toISOString(),
     }
     await setDoc(doc(db, 'users', cred.user.uid), profileData)
@@ -88,21 +76,23 @@ export function AuthProvider({ children }) {
     return cred.user
   }
 
-  const login = (email, password) => {
+  const login = async (email, password) => {
     requireFirebase()
-    return signInWithEmailAndPassword(auth, email, password)
+    const cred = await signInWithEmailAndPassword(auth, email, password)
+    // refresh profile after login
+    if (db) {
+      try {
+        const snap = await getDoc(doc(db, 'users', cred.user.uid))
+        if (snap.exists()) setProfile(snap.data())
+      } catch (e) { /* ignore */ }
+    }
+    return cred
   }
 
-  // Firebase requires passwords of at least 6 characters.
-  // A 4-digit PIN is padded to 6 chars by prepending zeros.
-  const pinToPassword = (pin) => String(pin).padStart(6, '0')
-
-  const phoneSignup = (phone, pin, businessName, bizType) => {
-    return signup(phoneToEmail(phone), pinToPassword(pin), businessName, bizType)
-  }
-
-  const phoneLogin = (phone, pin) => {
-    return login(phoneToEmail(phone), pinToPassword(pin))
+  const updateProfileData = async (data) => {
+    if (!user || !db) return
+    await updateDoc(doc(db, 'users', user.uid), data)
+    setProfile((prev) => ({ ...prev, ...data }))
   }
 
   const logout = () => {
@@ -111,11 +101,17 @@ export function AuthProvider({ children }) {
   }
 
   const isAdmin = profile?.role === 'admin'
+  const businessType = profile?.businessType || 'shop'
+  const planKey = profile?.planKey || profile?.plan || 'free'
 
   return (
-    <AuthContext.Provider
-      value={{ user, profile, loading, signup, login, phoneSignup, phoneLogin, logout, isAdmin, isFirebaseConfigured }}
-    >
+    <AuthContext.Provider value={{
+      user, profile, loading,
+      signup, login, logout,
+      updateProfileData,
+      isAdmin, businessType, planKey,
+      isFirebaseConfigured,
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   )

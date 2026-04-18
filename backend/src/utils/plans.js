@@ -35,5 +35,6 @@ const PLANS = {
 
 const TRIAL_DAYS = 14;
 const TRIAL_INVOICE_LIMIT = 50; // force-end trial if exceeded during trial
+const EXTRA_USER_PRICE = 2.5;   // $ per extra user/month on Pro plan
 
-module.exports = { PLANS, TRIAL_DAYS, TRIAL_INVOICE_LIMIT };
+module.exports = { PLANS, TRIAL_DAYS, TRIAL_INVOICE_LIMIT, EXTRA_USER_PRICE };

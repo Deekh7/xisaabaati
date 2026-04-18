@@ -1,162 +1,242 @@
-import { useMemo, useState, useEffect } from 'react'
-import { useNavigate }    from 'react-router-dom'
-import { Plus }           from 'lucide-react'
-import { useInvoices }    from '../hooks/useFirestore'
-import { useLang }        from '../context/LangContext'
-import { useAuth }        from '../context/AuthContext'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useSales, useExpenses, useProducts } from '../hooks/useFirestore'
+import { useAuth } from '../context/AuthContext'
 import { useSubscription } from '../context/SubscriptionContext'
-import { useLimitGuard }  from '../hooks/useLimitGuard'
-import PaywallModal       from '../components/PaywallModal'
-import { formatCurrency, formatDate, getStatusColor, isToday, getBizConfig } from '../utils/helpers'
+import { useLang } from '../context/LangContext'
+
+const G = '#16a34a'
+const GL = '#f0fdf4'
+const fm = (n) => `$${Number(n || 0).toFixed(2)}`
+const today = () => new Date().toISOString().split('T')[0]
+
+function WeekChart({ data, labels, height = 90 }) {
+  const max = Math.max(...data, 1)
+  return (
+    <div className="week-chart" style={{ height }}>
+      {data.map((v, i) => (
+        <div key={i} className="week-bar-wrap">
+          {i === data.length - 1 && (
+            <span className="week-bar-today-label">${v.toFixed(0)}</span>
+          )}
+          <div
+            className={`week-bar${i === data.length - 1 ? ' today' : ''}`}
+            style={{ height: `${Math.max((v / max) * (height - 24), 4)}px` }}
+          />
+          <span className="week-label">{labels[i]}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function DonutChart({ profit, expenses }) {
+  const total = profit + expenses || 1
+  const angle = (profit / total) * 283
+  const pct = Math.round((profit / total) * 100)
+  return (
+    <svg width="80" height="80" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#f1f5f9" strokeWidth="10" />
+      <circle
+        cx="50" cy="50" r="45" fill="none" stroke={G} strokeWidth="10"
+        strokeDasharray={`${angle} ${283 - angle}`}
+        strokeLinecap="round" transform="rotate(-90 50 50)"
+        style={{ transition: 'stroke-dasharray .8s' }}
+      />
+      <text x="50" y="56" textAnchor="middle" fontSize="16" fontWeight="800" fill={G}>
+        {pct}%
+      </text>
+    </svg>
+  )
+}
 
 export default function DashboardPage() {
-  const { t, lang }    = useLang()
-  const { profile }    = useAuth()
-  const biz = getBizConfig(profile?.bizType)
-  const { invoices, loading } = useInvoices(20)
-  const navigate       = useNavigate()
-  const { effectivePlan, isTrialActive, trialDaysLeft, invoicesCount, invoiceLimit } = useSubscription()
-  const { guard, PaywallGate } = useLimitGuard()
+  const navigate = useNavigate()
+  const { businessType } = useAuth()
+  const { effectivePlan, salesCount, invoiceLimit } = useSubscription()
+  const { t } = useLang()
+  const { sales, loading: sLoading } = useSales()
+  const { expenses } = useExpenses()
+  const { products } = useProducts()
 
-  // Simple / Advanced mode — persisted to localStorage
-  const [mode, setMode] = useState(() => {
-    try { return localStorage.getItem('xisaabaati_mode') || 'simple' } catch { return 'simple' }
-  })
-  const toggleMode = () => {
-    const next = mode === 'simple' ? 'advanced' : 'simple'
-    setMode(next)
-    try { localStorage.setItem('xisaabaati_mode', next) } catch {}
+  const todaySales    = useMemo(() => sales.filter((s) => s.date === today()), [sales])
+  const todayExpenses = useMemo(() => expenses.filter((e) => e.date === today()), [expenses])
+
+  const todayProfit   = todaySales.reduce((a, s) => a + (s.profit || 0), 0)
+  const todayRevenue  = todaySales.reduce((a, s) => a + (s.price || 0) * (s.qty || 1), 0)
+  const todayExpTotal = todayExpenses.reduce((a, e) => a + (e.amount || 0), 0)
+  const net           = todayProfit - todayExpTotal
+
+  // Weekly chart
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekData   = []
+  const weekLabels = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const ds = d.toISOString().split('T')[0]
+    weekData.push(sales.filter((s) => s.date === ds).reduce((a, s) => a + (s.profit || 0), 0))
+    weekLabels.push(i === 0 ? '•' : dayNames[d.getDay()])
   }
 
-  const stats = useMemo(() => {
-    const todayPaid = invoices
-      .filter(inv => isToday(inv.createdAt) && inv.status === 'paid')
-      .reduce((s, inv) => s + (inv.total || 0), 0)
-    const totalRevenue = invoices
-      .filter(inv => inv.status === 'paid')
-      .reduce((s, inv) => s + (inv.total || 0), 0)
-    const totalDebt = invoices
-      .filter(inv => inv.status === 'unpaid' || inv.status === 'partial')
-      .reduce((s, inv) => s + ((inv.total || 0) - (inv.amountPaid || 0)), 0)
-    return { todayPaid, totalRevenue, totalDebt }
-  }, [invoices])
+  // Best products
+  const bestProducts = useMemo(() =>
+    products.map((p) => {
+      const ps = todaySales.filter((s) => s.productId === p.id)
+      return { ...p, profit: ps.reduce((a, s) => a + (s.profit || 0), 0) }
+    }).sort((a, b) => b.profit - a.profit).slice(0, 4)
+  , [products, todaySales])
 
-  const recent = mode === 'simple' ? invoices.slice(0, 5) : invoices.slice(0, 6)
+  const isPlanFree = effectivePlan === 'free'
+  const limit = invoiceLimit || 30
+  const usedCount = salesCount || todaySales.length
+
+  if (sLoading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner" />
+      </div>
+    )
+  }
 
   return (
     <div>
-      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-        <h2>
-          {biz.emoji} {profile?.businessName || t('dashboard')}
-        </h2>
-        {/* Mode toggle */}
-        <button
-          onClick={toggleMode}
-          style={{
-            padding: '5px 14px', borderRadius: 99, border: 'none', cursor: 'pointer',
-            background: mode === 'simple' ? '#f0fdf4' : '#1e293b',
-            color: mode === 'simple' ? '#166534' : '#fff',
-            fontSize: '.76rem', fontWeight: 700, fontFamily: 'var(--font-body)',
-            transition: 'all .2s',
-          }}
-        >
-          {mode === 'simple' ? '⊞ Advanced' : '◱ Simple'}
-        </button>
+      {/* Upgrade banner */}
+      {isPlanFree && usedCount >= limit * 0.75 && (
+        <div className="upgrade-banner">
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{t('upgradeMsg')}</div>
+            <div style={{ fontSize: 12, opacity: 0.85 }}>
+              {limit - usedCount} {t('invoicesLeft')}
+            </div>
+            <div style={{ marginTop: 8, height: 5, background: 'rgba(255,255,255,.25)', borderRadius: 3, overflow: 'hidden', maxWidth: 200 }}>
+              <div style={{ height: '100%', background: '#fff', borderRadius: 3, width: `${Math.min((usedCount / limit) * 100, 100)}%` }} />
+            </div>
+          </div>
+          <button className="upgrade-banner-btn" onClick={() => navigate('/app/payment')}>
+            {t('upgrade')} →
+          </button>
+        </div>
+      )}
+
+      {/* Hero profit card */}
+      <div className="hero-profit">
+        <div className="hero-profit-label">{t('todayProfit')}</div>
+        <div className="hero-profit-value">{fm(net)}</div>
+        <div className="hero-profit-pills">
+          {[
+            { l: t('salesCount'), v: todaySales.length },
+            { l: t('totalSales'), v: fm(todayRevenue) },
+            { l: t('expenses_today'), v: fm(todayExpTotal) },
+          ].map((s) => (
+            <div key={s.l} className="hero-profit-pill">
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>{s.v}</div>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Plan badge — advanced only */}
-      {mode === 'advanced' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '4px 12px', borderRadius: 99,
-            background: effectivePlan === 'pro' ? 'var(--green-pale)' : effectivePlan === 'basic' ? '#fffbeb' : '#f1f5f9',
-            color: effectivePlan === 'pro' ? 'var(--green-dark)' : effectivePlan === 'basic' ? '#92400e' : '#475569',
-            border: `1px solid ${effectivePlan === 'pro' ? 'var(--green-light)' : effectivePlan === 'basic' ? '#fde68a' : '#e2e8f0'}`,
-            fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.4px',
-          }}>
-            {effectivePlan === 'pro' ? '✦' : effectivePlan === 'basic' ? '◆' : '○'} {effectivePlan}
-            {isTrialActive && <span style={{ opacity: .7 }}>· Trial</span>}
-          </span>
-          {invoiceLimit !== null && (
-            <span style={{ fontSize: '.72rem', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-              {invoicesCount}/{invoiceLimit} invoices
+      {/* Quick add sale button */}
+      <button
+        onClick={() => navigate('/app/sales')}
+        style={{
+          width: '100%', background: G, color: '#fff', border: 'none',
+          borderRadius: 14, padding: '14px 0', fontWeight: 700, fontSize: 16,
+          cursor: 'pointer', marginBottom: 18,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {businessType === 'restaurant' ? t('quickSale') : t('addSale')}
+      </button>
+
+      {/* Charts row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
+        <div className="card">
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14, color: '#374151' }}>
+            {t('weeklyProfit')}
+          </div>
+          <WeekChart data={weekData} labels={weekLabels} />
+        </div>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <span style={{ fontWeight: 700, fontSize: 13, color: '#374151' }}>{t('profitMargin')}</span>
+          <DonutChart profit={Math.max(net, 0)} expenses={todayExpTotal} />
+          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#94a3b8' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 8, height: 8, background: G, borderRadius: 2, display: 'inline-block' }} />
+              {t('profit')}
             </span>
-          )}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 8, height: 8, background: '#f1f5f9', borderRadius: 2, display: 'inline-block' }} />
+              {t('expenses')}
+            </span>
+          </div>
         </div>
-      )}
-
-      {/* Stat cards */}
-      <div className="stat-grid">
-        {/* Today revenue — always shown, accent uses biz.color */}
-        <div className="stat-card primary" style={{ borderColor: biz.color + '44', background: biz.bg }}>
-          <div className="stat-label">{t('todayRevenue')}</div>
-          <div className="stat-value mono" style={{ color: biz.color }}>{formatCurrency(stats.todayPaid)}</div>
-        </div>
-        {mode === 'advanced' && (
-          <>
-            <div className="stat-card">
-              <div className="stat-label" style={{ color: 'var(--ink-3)' }}>{t('totalRevenue')}</div>
-              <div className="stat-value" style={{ color: 'var(--green-dark)' }}>{formatCurrency(stats.totalRevenue)}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label" style={{ color: 'var(--ink-3)' }}>{t('totalDebt')}</div>
-              <div className="stat-value" style={{ color: 'var(--red)' }}>{formatCurrency(stats.totalDebt)}</div>
-            </div>
-          </>
-        )}
       </div>
 
-      {/* Simple mode — large new doc button */}
-      {mode === 'simple' && (
-        <button
-          className="btn btn-primary btn-full btn-lg"
-          style={{ marginBottom: 16, fontSize: '1.1rem', background: biz.color, border: 'none' }}
-          onClick={() => guard('invoice', () => navigate('/invoices', { state: { create: true } }))}
-        >
-          <Plus size={20} style={{ marginInlineEnd: 6 }} />
-          + New {biz.docLabel}
-        </button>
-      )}
-
-      {/* Recent invoices */}
-      <div className="card-large">
-        <div className="section-header">
-          <span className="section-title">{t('recentInvoices')}</span>
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/invoices')}>{t('viewAll')}</button>
-        </div>
-
-        {loading ? (
-          <div className="spinner" />
-        ) : recent.length === 0 ? (
-          <div className="empty-state"><p>{t('noInvoices')}</p></div>
-        ) : (
-          recent.map(inv => (
-            <div key={inv.id} className="invoice-item" onClick={() => navigate('/invoices')}>
-              <div className="invoice-status-dot" style={{ background: getStatusColor(inv.status) }} />
-              <div className="invoice-info">
-                <div className="invoice-customer">{inv.customerName || '—'}</div>
-                <div className="invoice-meta">{inv.invoiceNo} · {formatDate(inv.createdAt, lang)}</div>
+      {/* Best products */}
+      {bestProducts.length > 0 && (
+        <div className="card" style={{ marginBottom: 18 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14, color: '#374151' }}>
+            {t('bestProducts')}
+          </div>
+          {bestProducts.map((p, i) => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i < 3 ? 10 : 0 }}>
+              <div style={{
+                width: 26, height: 26,
+                background: i === 0 ? '#fef3c7' : GL,
+                borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, fontWeight: 700,
+                color: i === 0 ? '#92400e' : G, flexShrink: 0,
+              }}>
+                {i + 1}
               </div>
-              <div>
-                <div className="invoice-amount">{formatCurrency(inv.total)}</div>
-                <div style={{ textAlign: 'end' }}>
-                  <span className={`badge badge-${inv.status}`}>{t(inv.status)}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {p.name}
                 </div>
               </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: G }}>{fm(p.profit)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Recent sales */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f8fafc' }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#374151' }}>{t('recentSales')}</span>
+          <span className="badge badge-green">{t('daily')}</span>
+        </div>
+        {todaySales.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="1.5">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+              </svg>
+            </div>
+            <p className="empty-text">{t('noData')}</p>
+            <p className="empty-hint">{t('startSelling')}</p>
+          </div>
+        ) : (
+          todaySales.slice(0, 8).map((s) => (
+            <div key={s.id} className="list-item">
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{s.product}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                  {s.time} · ×{s.qty || 1}
+                </div>
+              </div>
+              <span style={{ fontWeight: 700, color: G, fontSize: 14 }}>{fm(s.profit)}</span>
             </div>
           ))
         )}
       </div>
-
-      {/* FAB — guarded (show in advanced mode) */}
-      {mode === 'advanced' && (
-        <button className="fab" onClick={() => guard('invoice', () => navigate('/invoices', { state: { create: true } }))}>
-          <Plus size={26} />
-        </button>
-      )}
-
-      <PaywallGate />
     </div>
   )
 }

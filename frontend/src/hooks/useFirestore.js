@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, limit
@@ -6,64 +6,155 @@ import {
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 
-// ---- INVOICES ----
-export function useInvoices(limitCount = null) {
+const today = () => new Date().toISOString().split('T')[0];
+const tnow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+// ─── SALES ────────────────────────────────────────────────────
+export function useSales(limitCount = null) {
   const { user } = useAuth();
-  const [invoices, setInvoices] = useState([]);
+  const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
     let q = query(
-      collection(db, 'invoices'),
+      collection(db, 'sales'),
       where('uid', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
     if (limitCount) q = query(q, limit(limitCount));
 
     const unsub = onSnapshot(q, (snap) => {
-      setInvoices(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
-    });
+    }, () => setLoading(false));
     return unsub;
   }, [user, limitCount]);
 
-  return { invoices, loading };
+  return { sales, loading };
 }
 
-export function useCreateInvoice() {
+export function useCreateSale() {
   const { user } = useAuth();
-  return async (data) => {
-    return addDoc(collection(db, 'invoices'), {
+  return useCallback(async (data) => {
+    return addDoc(collection(db, 'sales'), {
       ...data,
       uid: user.uid,
+      date: today(),
+      time: tnow(),
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     });
-  };
+  }, [user]);
 }
 
-export function useUpdateInvoice() {
-  return async (id, data) => {
-    return updateDoc(doc(db, 'invoices', id), {
-      ...data,
-      updatedAt: serverTimestamp(),
+export function useDeleteSale() {
+  return useCallback(async (id) => deleteDoc(doc(db, 'sales', id)), []);
+}
+
+// ─── PRODUCTS ─────────────────────────────────────────────────
+export function useProducts() {
+  const { user } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !db) return;
+    const q = query(
+      collection(db, 'products'),
+      where('uid', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    }, () => setLoading(false));
+    return unsub;
+  }, [user]);
+
+  return { products, loading };
+}
+
+export function useUpsertProduct() {
+  const { user } = useAuth();
+  return useCallback(async (data, editingId = null) => {
+    const payload = {
+      name: data.name,
+      cost: Number(data.cost) || 0,
+      price: Number(data.price) || 0,
+      stock: Number(data.stock) || 0,
+      category: data.category || '',
+      uid: user.uid,
+    };
+    if (editingId) {
+      await updateDoc(doc(db, 'products', editingId), { ...payload, updatedAt: serverTimestamp() });
+      return { id: editingId, ...payload };
+    } else {
+      const ref = await addDoc(collection(db, 'products'), { ...payload, createdAt: serverTimestamp() });
+      return { id: ref.id, ...payload };
+    }
+  }, [user]);
+}
+
+export function useUpdateProductStock() {
+  return useCallback(async (productId, newStock) => {
+    await updateDoc(doc(db, 'products', productId), { stock: newStock, updatedAt: serverTimestamp() });
+  }, []);
+}
+
+export function useDeleteProduct() {
+  return useCallback(async (id) => deleteDoc(doc(db, 'products', id)), []);
+}
+
+// ─── EXPENSES ─────────────────────────────────────────────────
+export function useExpenses(limitCount = null) {
+  const { user } = useAuth();
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !db) return;
+    let q = query(
+      collection(db, 'expenses'),
+      where('uid', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+    if (limitCount) q = query(q, limit(limitCount));
+    const unsub = onSnapshot(q, (snap) => {
+      setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    }, () => setLoading(false));
+    return unsub;
+  }, [user, limitCount]);
+
+  return { expenses, loading };
+}
+
+export function useCreateExpense() {
+  const { user } = useAuth();
+  return useCallback(async (data) => {
+    return addDoc(collection(db, 'expenses'), {
+      description: data.description,
+      amount: Number(data.amount) || 0,
+      uid: user.uid,
+      date: today(),
+      time: tnow(),
+      createdAt: serverTimestamp(),
     });
-  };
+  }, [user]);
 }
 
-export function useDeleteInvoice() {
-  return async (id) => deleteDoc(doc(db, 'invoices', id));
+export function useDeleteExpense() {
+  return useCallback(async (id) => deleteDoc(doc(db, 'expenses', id)), []);
 }
 
-// ---- CUSTOMERS ----
+// ─── CUSTOMERS ────────────────────────────────────────────────
 export function useCustomers() {
   const { user } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
     const q = query(
       collection(db, 'customers'),
       where('uid', '==', user.uid),
@@ -72,7 +163,7 @@ export function useCustomers() {
     const unsub = onSnapshot(q, (snap) => {
       setCustomers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
-    });
+    }, () => setLoading(false));
     return unsub;
   }, [user]);
 
@@ -81,19 +172,68 @@ export function useCustomers() {
 
 export function useCreateCustomer() {
   const { user } = useAuth();
-  return async (data) => {
+  return useCallback(async (data) => {
     return addDoc(collection(db, 'customers'), {
       ...data,
       uid: user.uid,
       createdAt: serverTimestamp(),
     });
-  };
+  }, [user]);
 }
 
 export function useUpdateCustomer() {
-  return async (id, data) => updateDoc(doc(db, 'customers', id), data);
+  return useCallback(async (id, data) => updateDoc(doc(db, 'customers', id), data), []);
 }
 
 export function useDeleteCustomer() {
-  return async (id) => deleteDoc(doc(db, 'customers', id));
+  return useCallback(async (id) => deleteDoc(doc(db, 'customers', id)), []);
+}
+
+// ─── INVOICES (legacy — kept for backward compat) ─────────────
+export function useInvoices(limitCount = null) {
+  const { user } = useAuth();
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !db) return;
+    let q = query(
+      collection(db, 'invoices'),
+      where('uid', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+    if (limitCount) q = query(q, limit(limitCount));
+    const unsub = onSnapshot(q, (snap) => {
+      setInvoices(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    }, () => setLoading(false));
+    return unsub;
+  }, [user, limitCount]);
+
+  return { invoices, loading };
+}
+
+export function useCreateInvoice() {
+  const { user } = useAuth();
+  return useCallback(async (data) => {
+    return addDoc(collection(db, 'invoices'), {
+      ...data,
+      uid: user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }, [user]);
+}
+
+export function useUpdateInvoice() {
+  return useCallback(async (id, data) => {
+    return updateDoc(doc(db, 'invoices', id), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+  }, []);
+}
+
+export function useDeleteInvoice() {
+  return useCallback(async (id) => deleteDoc(doc(db, 'invoices', id)), []);
 }

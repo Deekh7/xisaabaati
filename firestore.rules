@@ -5,37 +5,56 @@ service cloud.firestore {
     // ── helpers ──────────────────────────────────────────────────
     function isAuth()  { return request.auth != null; }
     function isOwner() { return request.auth.uid == resource.data.uid; }
-    function isAdmin() { return request.auth.token.admin == true; }
+    function isAdmin() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; }
+    function ownsNew() { return request.auth.uid == request.resource.data.uid; }
 
     // ── users ────────────────────────────────────────────────────
-    // Users read/write own profile only; admins can read any
     match /users/{userId} {
       allow read:  if isAuth() && (request.auth.uid == userId || isAdmin());
       allow write: if isAuth() && request.auth.uid == userId;
     }
 
-    // ── invoices ─────────────────────────────────────────────────
+    // ── sales ────────────────────────────────────────────────────
+    match /sales/{saleId} {
+      allow read:           if isAuth() && isOwner();
+      allow create:         if isAuth() && ownsNew();
+      allow update, delete: if isAuth() && isOwner();
+    }
+
+    // ── products ─────────────────────────────────────────────────
+    match /products/{productId} {
+      allow read:           if isAuth() && isOwner();
+      allow create:         if isAuth() && ownsNew();
+      allow update, delete: if isAuth() && isOwner();
+    }
+
+    // ── expenses ─────────────────────────────────────────────────
+    match /expenses/{expenseId} {
+      allow read:           if isAuth() && isOwner();
+      allow create:         if isAuth() && ownsNew();
+      allow update, delete: if isAuth() && isOwner();
+    }
+
+    // ── invoices (legacy) ─────────────────────────────────────────
     match /invoices/{invoiceId} {
-      allow read:   if isAuth() && isOwner();
-      allow create: if isAuth() && request.auth.uid == request.resource.data.uid;
+      allow read:           if isAuth() && isOwner();
+      allow create:         if isAuth() && ownsNew();
       allow update, delete: if isAuth() && isOwner();
     }
 
     // ── customers ────────────────────────────────────────────────
     match /customers/{customerId} {
-      allow read:   if isAuth() && isOwner();
-      allow create: if isAuth() && request.auth.uid == request.resource.data.uid;
+      allow read:           if isAuth() && isOwner();
+      allow create:         if isAuth() && ownsNew();
       allow update, delete: if isAuth() && isOwner();
     }
 
     // ── payments ─────────────────────────────────────────────────
-    // Users can create and read their own payments
-    // Only admins can update (approve/reject) payments
     match /payments/{paymentId} {
       allow read:   if isAuth() && (isOwner() || isAdmin());
-      allow create: if isAuth() && request.auth.uid == request.resource.data.uid;
+      allow create: if isAuth() && ownsNew();
       allow update: if isAuth() && isAdmin();
-      allow delete: if false; // never delete payment records
+      allow delete: if false;
     }
 
     // ── adminNotifications ───────────────────────────────────────
@@ -49,21 +68,18 @@ service cloud.firestore {
     }
 
     // ── messages (contact form) ──────────────────────────────────
-    // Anyone can submit a contact form message (create only)
     match /messages/{id} {
       allow create: if request.resource.data.keys().hasAll(['name', 'body']);
       allow read, update, delete: if isAuth() && isAdmin();
     }
 
     // ── plans ────────────────────────────────────────────────────
-    // Anyone can read plan configs (pricing page)
     match /plans/{planKey} {
       allow read:  if true;
       allow write: if isAuth() && isAdmin();
     }
 
     // ── pages (CMS) ──────────────────────────────────────────────
-    // Anyone can read CMS pages (about, privacy, terms)
     match /pages/{slug} {
       allow read:  if true;
       allow write: if isAuth() && isAdmin();
