@@ -36,6 +36,36 @@ export default function ReportsPage() {
   const { expenses } = useExpenses()
   const { products } = useProducts()
 
+  const totS = sales.reduce((a, s) => a + (s.price || 0) * (s.qty || 1), 0)
+  const totP = sales.reduce((a, s) => a + (s.profit || 0), 0)
+  const totE = expenses.reduce((a, e) => a + (e.amount || 0), 0)
+  const net  = totP - totE
+
+  // Weekly chart
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekData   = []
+  const weekLabels = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const ds = d.toISOString().split('T')[0]
+    weekData.push(sales.filter((s) => s.date === ds).reduce((a, s) => a + (s.profit || 0), 0))
+    weekLabels.push(i === 0 ? 'Today' : dayNames[d.getDay()])
+  }
+
+  // Product stats — must be before any conditional return (Rules of Hooks)
+  const prodStats = useMemo(() =>
+    products.map((p) => {
+      const ps = sales.filter((s) => s.productId === p.id)
+      return {
+        ...p,
+        soldQty: ps.reduce((a, s) => a + (s.qty || 1), 0),
+        revenue: ps.reduce((a, s) => a + (s.price || 0) * (s.qty || 1), 0),
+        profit: ps.reduce((a, s) => a + (s.profit || 0), 0),
+      }
+    }).sort((a, b) => b.profit - a.profit)
+  , [products, sales])
+
   if (!canViewReports) {
     return (
       <div className="lock-screen">
@@ -59,36 +89,6 @@ export default function ReportsPage() {
       </div>
     )
   }
-
-  const totS = sales.reduce((a, s) => a + (s.price || 0) * (s.qty || 1), 0)
-  const totP = sales.reduce((a, s) => a + (s.profit || 0), 0)
-  const totE = expenses.reduce((a, e) => a + (e.amount || 0), 0)
-  const net  = totP - totE
-
-  // Weekly chart
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const weekData   = []
-  const weekLabels = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const ds = d.toISOString().split('T')[0]
-    weekData.push(sales.filter((s) => s.date === ds).reduce((a, s) => a + (s.profit || 0), 0))
-    weekLabels.push(i === 0 ? 'Today' : dayNames[d.getDay()])
-  }
-
-  // Product stats
-  const prodStats = useMemo(() =>
-    products.map((p) => {
-      const ps = sales.filter((s) => s.productId === p.id)
-      return {
-        ...p,
-        soldQty: ps.reduce((a, s) => a + (s.qty || 1), 0),
-        revenue: ps.reduce((a, s) => a + (s.price || 0) * (s.qty || 1), 0),
-        profit: ps.reduce((a, s) => a + (s.profit || 0), 0),
-      }
-    }).sort((a, b) => b.profit - a.profit)
-  , [products, sales])
 
   const medals = ['🥇', '🥈', '🥉']
 
