@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  collection, query, where, orderBy, onSnapshot,
+  collection, query, where, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, limit
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -8,6 +8,13 @@ import { useAuth } from '../context/AuthContext';
 
 const today = () => new Date().toISOString().split('T')[0];
 const tnow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+// Sort by createdAt descending (client-side — avoids composite index requirement)
+const byCreatedDesc = (a, b) => {
+  const ta = a.createdAt?.seconds ?? 0;
+  const tb = b.createdAt?.seconds ?? 0;
+  return tb - ta;
+};
 
 // ─── SALES ────────────────────────────────────────────────────
 export function useSales(limitCount = null) {
@@ -17,15 +24,16 @@ export function useSales(limitCount = null) {
 
   useEffect(() => {
     if (!user || !db) return;
-    let q = query(
+    const q = query(
       collection(db, 'sales'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('uid', '==', user.uid)
     );
-    if (limitCount) q = query(q, limit(limitCount));
 
     const unsub = onSnapshot(q, (snap) => {
-      setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort(byCreatedDesc);
+      if (limitCount) docs = docs.slice(0, limitCount);
+      setSales(docs);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
@@ -61,11 +69,12 @@ export function useProducts() {
     if (!user || !db) return;
     const q = query(
       collection(db, 'products'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('uid', '==', user.uid)
     );
     const unsub = onSnapshot(q, (snap) => {
-      setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort(byCreatedDesc);
+      setProducts(docs);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
@@ -113,14 +122,15 @@ export function useExpenses(limitCount = null) {
 
   useEffect(() => {
     if (!user || !db) return;
-    let q = query(
+    const q = query(
       collection(db, 'expenses'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('uid', '==', user.uid)
     );
-    if (limitCount) q = query(q, limit(limitCount));
     const unsub = onSnapshot(q, (snap) => {
-      setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort(byCreatedDesc);
+      if (limitCount) docs = docs.slice(0, limitCount);
+      setExpenses(docs);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
@@ -157,11 +167,13 @@ export function useCustomers() {
     if (!user || !db) return;
     const q = query(
       collection(db, 'customers'),
-      where('uid', '==', user.uid),
-      orderBy('name', 'asc')
+      where('uid', '==', user.uid)
     );
     const unsub = onSnapshot(q, (snap) => {
-      setCustomers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort by name ascending
+      docs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      setCustomers(docs);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
@@ -197,14 +209,15 @@ export function useInvoices(limitCount = null) {
 
   useEffect(() => {
     if (!user || !db) return;
-    let q = query(
+    const q = query(
       collection(db, 'invoices'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('uid', '==', user.uid)
     );
-    if (limitCount) q = query(q, limit(limitCount));
     const unsub = onSnapshot(q, (snap) => {
-      setInvoices(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort(byCreatedDesc);
+      if (limitCount) docs = docs.slice(0, limitCount);
+      setInvoices(docs);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
