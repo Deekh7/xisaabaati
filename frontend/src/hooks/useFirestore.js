@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  collection, query, where, onSnapshot,
-  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, limit
+  collection, query, where, onSnapshot, getDocs,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,12 @@ const byCreatedDesc = (a, b) => {
   const tb = b.createdAt?.seconds ?? 0;
   return tb - ta;
 };
+
+// Fallback: if onSnapshot fails (e.g. network error / 503), do a one-time getDocs read
+async function fallbackGetDocs(q) {
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 
 // ─── SALES ────────────────────────────────────────────────────
 export function useSales(limitCount = null) {
@@ -35,7 +41,16 @@ export function useSales(limitCount = null) {
       if (limitCount) docs = docs.slice(0, limitCount);
       setSales(docs);
       setLoading(false);
-    }, () => setLoading(false));
+    }, async () => {
+      // Listener failed — fall back to one-time read
+      try {
+        let docs = await fallbackGetDocs(q);
+        docs.sort(byCreatedDesc);
+        if (limitCount) docs = docs.slice(0, limitCount);
+        setSales(docs);
+      } catch {}
+      setLoading(false);
+    });
     return unsub;
   }, [user, limitCount]);
 
@@ -76,7 +91,15 @@ export function useProducts() {
       docs.sort(byCreatedDesc);
       setProducts(docs);
       setLoading(false);
-    }, () => setLoading(false));
+    }, async () => {
+      // Listener failed — fall back to one-time read
+      try {
+        const docs = await fallbackGetDocs(q);
+        docs.sort(byCreatedDesc);
+        setProducts(docs);
+      } catch {}
+      setLoading(false);
+    });
     return unsub;
   }, [user]);
 
@@ -132,7 +155,15 @@ export function useExpenses(limitCount = null) {
       if (limitCount) docs = docs.slice(0, limitCount);
       setExpenses(docs);
       setLoading(false);
-    }, () => setLoading(false));
+    }, async () => {
+      try {
+        let docs = await fallbackGetDocs(q);
+        docs.sort(byCreatedDesc);
+        if (limitCount) docs = docs.slice(0, limitCount);
+        setExpenses(docs);
+      } catch {}
+      setLoading(false);
+    });
     return unsub;
   }, [user, limitCount]);
 
@@ -171,11 +202,17 @@ export function useCustomers() {
     );
     const unsub = onSnapshot(q, (snap) => {
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Sort by name ascending
       docs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       setCustomers(docs);
       setLoading(false);
-    }, () => setLoading(false));
+    }, async () => {
+      try {
+        const docs = await fallbackGetDocs(q);
+        docs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        setCustomers(docs);
+      } catch {}
+      setLoading(false);
+    });
     return unsub;
   }, [user]);
 
@@ -219,7 +256,15 @@ export function useInvoices(limitCount = null) {
       if (limitCount) docs = docs.slice(0, limitCount);
       setInvoices(docs);
       setLoading(false);
-    }, () => setLoading(false));
+    }, async () => {
+      try {
+        let docs = await fallbackGetDocs(q);
+        docs.sort(byCreatedDesc);
+        if (limitCount) docs = docs.slice(0, limitCount);
+        setInvoices(docs);
+      } catch {}
+      setLoading(false);
+    });
     return unsub;
   }, [user, limitCount]);
 
