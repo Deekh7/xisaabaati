@@ -39,6 +39,7 @@ const PayIcon     = ({ a }) => navIcon(<><rect x="1" y="4" width="22" height="16
 const UsersIcon   = ({ a }) => navIcon(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, a)
 const MsgIcon     = ({ a }) => navIcon(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>, a)
 const CmsIcon     = ({ a }) => navIcon(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>, a)
+const ASettingsIcon = ({ a }) => navIcon(<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>, a)
 
 const USER_NAV = [
   { path:'/app',          exact:true,  labelKey:'dashboard', Icon:HomeIcon,     expColor:G },
@@ -49,11 +50,11 @@ const USER_NAV = [
 ]
 
 const ADMIN_NAV = [
-  { path:'/app/admin',          labelKey:'adminStats',    Icon:StatsIcon  },
-  { path:'/app/admin/payments', labelKey:'adminPay',      Icon:PayIcon    },
-  { path:'/app/admin/users',    labelKey:'adminUsers',    Icon:UsersIcon  },
-  { path:'/app/admin/messages', labelKey:'adminMsgs',     Icon:MsgIcon    },
-  { path:'/app/admin/content',  labelKey:'adminContent',  Icon:CmsIcon    },
+  { path:'/app/admin',           labelKey:'adminStats',    Icon:StatsIcon    },
+  { path:'/app/admin/payments',  labelKey:'adminPay',      Icon:PayIcon      },
+  { path:'/app/admin/users',     labelKey:'adminUsers',    Icon:UsersIcon    },
+  { path:'/app/admin/messages',  labelKey:'adminMsgs',     Icon:MsgIcon      },
+  { path:'/app/admin/settings',  labelKey:'adminSettings', Icon:ASettingsIcon},
 ]
 
 export default function AppLayout() {
@@ -87,12 +88,23 @@ export default function AppLayout() {
           </span>
         </div>
 
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           {isAdmin && (
-            <span style={{
-              background:'#fef3c7', color:'#92400e', fontSize:11, fontWeight:700,
-              padding:'3px 10px', borderRadius:20, border:'1px solid #fde68a',
-            }}>ADMIN</span>
+            <>
+              <span style={{
+                background:'#fef3c7', color:'#92400e', fontSize:11, fontWeight:700,
+                padding:'3px 10px', borderRadius:20, border:'1px solid #fde68a',
+              }}>ADMIN</span>
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                style={{
+                  background:'#fee2e2', color:'#dc2626', border:'none',
+                  borderRadius:10, padding:'6px 10px', cursor:'pointer',
+                  fontWeight:700, fontSize:12, display:'flex', alignItems:'center', gap:4,
+                }}
+              >🚪</button>
+            </>
           )}
           <div className="status-chip">
             <div className="status-dot online" />

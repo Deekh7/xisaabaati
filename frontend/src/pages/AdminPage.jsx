@@ -638,7 +638,7 @@ function MessagesTab() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  CONTENT TAB (CMS)
+//  SETTINGS TAB  (Payment Numbers + CMS)
 // ════════════════════════════════════════════════════════════
 const PAGES_CONFIG = [
   { slug:'about',   title:'من نحن',        icon:'🏢' },
@@ -647,7 +647,87 @@ const PAGES_CONFIG = [
   { slug:'terms',   title:'الشروط والأحكام', icon:'📋' },
 ]
 
-function ContentTab() {
+const DEFAULT_PAYMENT = {
+  manual: '+252 61 000 0000',
+  evc:    '252610000000',
+  zaad:   '252630000000',
+  sahal:  '252680000000',
+  bankName:    '',
+  bankAccount: '',
+  bankHolder:  '',
+  whatsappAdmin: '+252 61 000 0000',
+}
+
+function PaymentSettingsPanel() {
+  const [nums, setNums]   = useState(DEFAULT_PAYMENT)
+  const [saving, setSaving] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db,'settings','payment'), snap => {
+      if (snap.exists()) setNums({ ...DEFAULT_PAYMENT, ...snap.data() })
+      setLoaded(true)
+    }, () => setLoaded(true))
+    return unsub
+  }, [])
+
+  const inp = {
+    width:'100%', padding:'12px 14px', border:'1.5px solid #e2e8f0', borderRadius:12,
+    fontSize:14, outline:'none', fontFamily:'inherit', color:'#1e293b', background:'#fff',
+  }
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      const { setDoc } = await import('firebase/firestore')
+      await setDoc(doc(db,'settings','payment'), { ...nums, updatedAt: new Date().toISOString() })
+      toast.success('✅ تم حفظ أرقام الدفع!')
+    } catch(e) { toast.error('فشل الحفظ: '+e.message) }
+    finally { setSaving(false) }
+  }
+
+  if (!loaded) return <div className="loading-spinner"><div className="spinner"/></div>
+
+  const Field = ({ label, field, placeholder }) => (
+    <div style={{ marginBottom:14 }}>
+      <label style={{ fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'#374151' }}>{label}</label>
+      <input style={inp} value={nums[field]||''} onChange={e=>setNums(p=>({...p,[field]:e.target.value}))} placeholder={placeholder} />
+    </div>
+  )
+
+  return (
+    <div>
+      <div style={{ background:'#eff6ff', border:'1.5px solid #bfdbfe', borderRadius:12, padding:'12px 14px', marginBottom:20, fontSize:13, color:'#1d4ed8' }}>
+        💡 هذه الأرقام تظهر للعملاء عند الاشتراك — تأكد من صحتها قبل الحفظ.
+      </div>
+      <div style={{ background:'#fff', border:'1.5px solid #f1f5f9', borderRadius:16, padding:20, marginBottom:16 }}>
+        <h3 style={{ fontWeight:700, fontSize:15, marginBottom:16, color:'#0f172a' }}>💬 واتساب الإدارة (يدوي)</h3>
+        <Field label="رقم واتساب الإدارة" field="manual" placeholder="+252 61 000 0000" />
+      </div>
+      <div style={{ background:'#fff', border:'1.5px solid #f1f5f9', borderRadius:16, padding:20, marginBottom:16 }}>
+        <h3 style={{ fontWeight:700, fontSize:15, marginBottom:16, color:'#0f172a' }}>📱 الدفع الإلكتروني المحلي</h3>
+        <Field label="EVC Plus (Hormuud)" field="evc"  placeholder="252610000000" />
+        <Field label="Zaad (Telesom)"     field="zaad" placeholder="252630000000" />
+        <Field label="Sahal (Somtel)"     field="sahal" placeholder="252680000000" />
+      </div>
+      <div style={{ background:'#fff', border:'1.5px solid #f1f5f9', borderRadius:16, padding:20, marginBottom:16 }}>
+        <h3 style={{ fontWeight:700, fontSize:15, marginBottom:16, color:'#0f172a' }}>🏦 تحويل بنكي / حوالة (اختياري)</h3>
+        <Field label="اسم البنك أو شركة الحوالة" field="bankName"    placeholder="مثال: Salaam Bank, Dahabshiil" />
+        <Field label="رقم الحساب / رقم المستلم"   field="bankAccount" placeholder="1234-5678-xxxx" />
+        <Field label="اسم صاحب الحساب"            field="bankHolder"  placeholder="محمد أحمد" />
+      </div>
+      <button onClick={save} disabled={saving} style={{
+        width:'100%', padding:'14px 0', borderRadius:12, border:'none',
+        background:G, color:'#fff', fontWeight:700, fontSize:15, cursor:'pointer',
+        opacity:saving ? 0.7 : 1,
+      }}>
+        {saving ? '⏳ جاري الحفظ...' : '💾 حفظ أرقام الدفع'}
+      </button>
+    </div>
+  )
+}
+
+function ContentPanel() {
   const [activePage, setActivePage] = useState('about')
   const [contents, setContents] = useState({})
   const [saving, setSaving] = useState(false)
@@ -666,99 +746,75 @@ function ContentTab() {
   }, [])
 
   const cur = contents[activePage] || { title:'', body:'' }
-
-  const setField = (field, val) => {
-    setContents(prev => ({
-      ...prev,
-      [activePage]: { ...prev[activePage], [field]: val }
-    }))
-  }
+  const setField = (field, val) => setContents(prev => ({ ...prev, [activePage]: { ...prev[activePage], [field]: val } }))
 
   const save = async () => {
     setSaving(true)
     try {
-      await updateDoc(doc(db,'pages',activePage), {
-        ...cur, updatedAt: new Date().toISOString(),
-      }).catch(async () => {
-        // doc might not exist yet — use set
-        const { setDoc } = await import('firebase/firestore')
-        await setDoc(doc(db,'pages',activePage), {
-          ...cur, slug:activePage, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+      await updateDoc(doc(db,'pages',activePage), { ...cur, updatedAt: new Date().toISOString() })
+        .catch(async () => {
+          const { setDoc } = await import('firebase/firestore')
+          await setDoc(doc(db,'pages',activePage), { ...cur, slug:activePage, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() })
         })
-      })
       toast.success('✅ تم الحفظ!')
     } catch(e) { toast.error('فشل الحفظ: '+e.message) }
     finally { setSaving(false) }
   }
 
-  const inp = {
-    width:'100%', padding:'12px 14px', border:'1.5px solid #e2e8f0', borderRadius:12,
-    fontSize:14, outline:'none', fontFamily:'inherit', color:'#1e293b', background:'#fff',
-  }
+  const inp = { width:'100%', padding:'12px 14px', border:'1.5px solid #e2e8f0', borderRadius:12, fontSize:14, outline:'none', fontFamily:'inherit', color:'#1e293b', background:'#fff' }
 
   return (
     <div>
-      <SectionHeader title="📝 إدارة محتوى الصفحات" />
-
-      {/* Page tabs */}
       <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
         {PAGES_CONFIG.map(p => (
           <button key={p.slug} onClick={()=>setActivePage(p.slug)} style={{
-            padding:'8px 16px', borderRadius:12, fontSize:13, fontWeight:600,
-            border:'1.5px solid', cursor:'pointer',
-            background:activePage===p.slug ? G : '#fff',
-            color:activePage===p.slug ? '#fff' : '#64748b',
-            borderColor:activePage===p.slug ? G : '#e2e8f0',
+            padding:'8px 16px', borderRadius:12, fontSize:13, fontWeight:600, border:'1.5px solid', cursor:'pointer',
+            background:activePage===p.slug ? G : '#fff', color:activePage===p.slug ? '#fff' : '#64748b', borderColor:activePage===p.slug ? G : '#e2e8f0',
           }}>{p.icon} {p.title}</button>
         ))}
       </div>
-
-      {/* Editor */}
       <div style={{ background:'#fff', border:'1.5px solid #f1f5f9', borderRadius:16, padding:20 }}>
         <div style={{ marginBottom:16 }}>
           <label style={{ fontSize:13, fontWeight:600, display:'block', marginBottom:6 }}>عنوان الصفحة</label>
-          <input
-            style={inp}
-            value={cur.title || ''}
-            onChange={e => setField('title', e.target.value)}
-            placeholder="عنوان الصفحة..."
-          />
+          <input style={inp} value={cur.title||''} onChange={e=>setField('title',e.target.value)} placeholder="عنوان الصفحة..." />
         </div>
         <div style={{ marginBottom:16 }}>
           <label style={{ fontSize:13, fontWeight:600, display:'block', marginBottom:6 }}>محتوى الصفحة</label>
-          <textarea
-            style={{ ...inp, minHeight:240, resize:'vertical', lineHeight:1.7 }}
-            value={cur.body || ''}
-            onChange={e => setField('body', e.target.value)}
-            placeholder="اكتب محتوى الصفحة هنا..."
-          />
+          <textarea style={{ ...inp, minHeight:220, resize:'vertical', lineHeight:1.7 }} value={cur.body||''} onChange={e=>setField('body',e.target.value)} placeholder="اكتب محتوى الصفحة هنا..." />
         </div>
         <div style={{ marginBottom:12 }}>
-          <label style={{ fontSize:13, fontWeight:600, display:'block', marginBottom:6 }}>معلومات إضافية (اختياري)</label>
-          <input
-            style={inp}
-            value={cur.extra || ''}
-            onChange={e => setField('extra', e.target.value)}
-            placeholder="رقم هاتف، بريد إلكتروني، عنوان..."
-          />
+          <label style={{ fontSize:13, fontWeight:600, display:'block', marginBottom:6 }}>معلومات إضافية</label>
+          <input style={inp} value={cur.extra||''} onChange={e=>setField('extra',e.target.value)} placeholder="رقم هاتف، بريد إلكتروني، عنوان..." />
         </div>
-        <button onClick={save} disabled={saving} style={{
-          width:'100%', padding:'14px 0', borderRadius:12, border:'none',
-          background:G, color:'#fff', fontWeight:700, fontSize:15, cursor:'pointer',
-          opacity:saving ? 0.7 : 1,
-        }}>
+        <button onClick={save} disabled={saving} style={{ width:'100%', padding:'14px 0', borderRadius:12, border:'none', background:G, color:'#fff', fontWeight:700, fontSize:15, cursor:'pointer', opacity:saving?0.7:1 }}>
           {saving ? '⏳ جاري الحفظ...' : '💾 حفظ التغييرات'}
         </button>
-
-        {/* Preview link */}
         <div style={{ textAlign:'center', marginTop:12 }}>
-          <a
-            href={`/${activePage}`}
-            target="_blank"
-            style={{ fontSize:12, color:'#64748b', textDecoration:'none' }}
-          >👁️ معاينة الصفحة →</a>
+          <a href={`/${activePage}`} target="_blank" style={{ fontSize:12, color:'#64748b', textDecoration:'none' }}>👁️ معاينة الصفحة →</a>
         </div>
       </div>
+    </div>
+  )
+}
+
+function AdminSettingsTab() {
+  const [panel, setPanel] = useState('payment')
+  const PANELS = [
+    { id:'payment', label:'💳 أرقام الدفع' },
+    { id:'content', label:'📝 محتوى الصفحات' },
+  ]
+  return (
+    <div>
+      <SectionHeader title="⚙️ الإعدادات" />
+      <div style={{ display:'flex', gap:8, marginBottom:20 }}>
+        {PANELS.map(p => (
+          <button key={p.id} onClick={()=>setPanel(p.id)} style={{
+            padding:'9px 18px', borderRadius:12, fontSize:13, fontWeight:700, border:'1.5px solid', cursor:'pointer',
+            background:panel===p.id ? G : '#fff', color:panel===p.id ? '#fff' : '#64748b', borderColor:panel===p.id ? G : '#e2e8f0',
+          }}>{p.label}</button>
+        ))}
+      </div>
+      {panel === 'payment' ? <PaymentSettingsPanel /> : <ContentPanel />}
     </div>
   )
 }
@@ -772,11 +828,13 @@ export default function AdminPage() {
 
   return (
     <Routes>
-      <Route index          element={<StatsTab />} />
-      <Route path="payments" element={<PaymentsTab />} />
-      <Route path="users"    element={<UsersTab />} />
-      <Route path="messages" element={<MessagesTab />} />
-      <Route path="content"  element={<ContentTab />} />
+      <Route index              element={<StatsTab />} />
+      <Route path="payments"   element={<PaymentsTab />} />
+      <Route path="users"      element={<UsersTab />} />
+      <Route path="messages"   element={<MessagesTab />} />
+      <Route path="settings"   element={<AdminSettingsTab />} />
+      {/* legacy redirect */}
+      <Route path="content"    element={<AdminSettingsTab />} />
     </Routes>
   )
 }

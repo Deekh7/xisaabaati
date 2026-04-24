@@ -57,6 +57,16 @@ function ConfirmDialog({ open, message, onYes, onNo, t }) {
 
 const emptyForm = { name: '', cost: '', price: '', stock: '', category: '' }
 
+// Per-business-type category suggestions
+const BUSINESS_CATEGORIES = {
+  shop:        ['ملابس', 'أحذية', 'مواد غذائية', 'إلكترونيات', 'مستلزمات منزلية', 'مستحضرات تجميل', 'ألعاب', 'أخرى'],
+  restaurant:  ['وجبات رئيسية', 'مقبلات', 'مشروبات', 'حلويات', 'وجبات سريعة', 'إفطار', 'مأكولات بحرية', 'أخرى'],
+  pharmacy:    ['أدوية', 'فيتامينات ومكملات', 'إسعافات أولية', 'عناية شخصية', 'أجهزة طبية', 'أطفال', 'أخرى'],
+  services:    ['إصلاح', 'استشارات', 'توصيل', 'تنظيف', 'تصميم', 'تعليم', 'أخرى'],
+  electronics: ['هواتف', 'حواسيب', 'إكسسوارات', 'صوتيات', 'كاميرات', 'شبكات', 'أخرى'],
+  importexport:['بضائع مستوردة', 'بضائع تصديرية', 'جملة', 'مواد خام', 'أخرى'],
+}
+
 export default function ProductsPage() {
   const { businessType } = useAuth()
   const { t } = useLang()
@@ -254,7 +264,32 @@ export default function ProductsPage() {
           )}
           <div className="form-group">
             <label className="form-label">{t('category')}</label>
-            <input style={inp} value={form.category} onChange={s('category')} placeholder={t('category')} />
+            <select
+              style={{ ...inp, cursor:'pointer' }}
+              value={form.category}
+              onChange={e => {
+                if (e.target.value === '__custom__') {
+                  setForm(f => ({ ...f, category: '' }))
+                } else {
+                  setForm(f => ({ ...f, category: e.target.value }))
+                }
+              }}
+            >
+              <option value="">{t('category')}...</option>
+              {(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.shop).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+              <option value="__custom__">✏️ كتابة يدوية...</option>
+            </select>
+            {/* Show text input if category isn't in the predefined list */}
+            {form.category !== '' && !(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.shop).includes(form.category) && (
+              <input
+                style={{ ...inp, marginTop:8 }}
+                value={form.category}
+                onChange={s('category')}
+                placeholder={t('category')}
+              />
+            )}
           </div>
         </div>
 

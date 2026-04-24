@@ -1,29 +1,30 @@
 // PaymentPage.jsx — Firestore-based payment flow
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { collection, addDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 const G = '#16a34a'
+const fm = n => `$${Number(n||0).toFixed(2)}`
 
 const PLANS = [
   {
     id:'starter', name:'Starter', price:9, annualPrice:6.3,
     icon:'⚡', color:'#1d4ed8',
-    features:['تقارير أساسية','تتبع المصروفات','مبيعات غير محدودة','مستخدم واحد'],
+    features:['مبيعات غير محدودة','تقارير أساسية','تتبع المصروفات','1 مستخدم · 1 فرع'],
   },
   {
     id:'basic', name:'Basic', price:19, annualPrice:13.3,
     icon:'◆', color:'#7c3aed',
-    features:['كل مميزات Starter','فواتير غير محدودة','تقارير متقدمة','أولوية الدعم'],
+    features:['كل مميزات Starter','تقارير متقدمة','3 مستخدمين · 3 فروع','أولوية الدعم'],
     popular: true,
   },
   {
     id:'pro', name:'Pro', price:39, annualPrice:27.3,
     icon:'✦', color:G,
-    features:['كل مميزات Basic','متعدد المستخدمين','تصدير Excel/PDF','مدير حساب مخصص'],
+    features:['كل مميزات Basic','7 مستخدمين · 7 فروع','تصدير Excel/PDF','مدير حساب مخصص'],
   },
 ]
 
@@ -34,7 +35,8 @@ const METHODS = [
   { id:'sahal',  label:'Sahal',            sublabel:'Somtel · اتصل *567#',              icon:'💳', accent:'#ff6b00' },
 ]
 
-const PAYMENT_NUMBERS = {
+// Fallback numbers (overridden by Firestore settings/payment)
+const DEFAULT_PAYMENT_NUMBERS = {
   manual: { label:'واتساب الإدارة',    number:'+252 61 000 0000' },
   evc:    { label:'رقم EVC Plus',      number:'252610000000'     },
   zaad:   { label:'رقم Zaad',          number:'252630000000'     },
@@ -58,14 +60,29 @@ export default function PaymentPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [step,       setStep]       = useState(1)
-  const [plan,       setPlan]       = useState(searchParams.get('plan') || 'pro')
-  const [billing,    setBilling]    = useState('monthly') // monthly | annual
-  const [method,     setMethod]     = useState('manual')
-  const [phoneUsed,  setPhoneUsed]  = useState('')
-  const [proofNote,  setProofNote]  = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [myPayments, setMyPayments] = useState([])
+  const [step,           setStep]           = useState(1)
+  const [plan,           setPlan]           = useState(searchParams.get('plan') || 'pro')
+  const [billing,        setBilling]        = useState('monthly')
+  const [method,         setMethod]         = useState('manual')
+  const [phoneUsed,      setPhoneUsed]      = useState('')
+  const [proofNote,      setProofNote]      = useState('')
+  const [submitting,     setSubmitting]     = useState(false)
+  const [myPayments,     setMyPayments]     = useState([])
+  const [paymentNumbers, setPaymentNumbers] = useState(DEFAULT_PAYMENT_NUMBERS)
+
+  // Load admin-configured payment numbers from Firestore
+  useEffect(() => {
+    getDoc(doc(db, 'settings', 'payment')).then(snap => {
+      if (!snap.exists()) return
+      const d = snap.data()
+      setPaymentNumbers({
+        manual: { label:'واتساب الإدارة', number: d.manual || DEFAULT_PAYMENT_NUMBERS.manual.number },
+        evc:    { label:'رقم EVC Plus',    number: d.evc    || DEFAULT_PAYMENT_NUMBERS.evc.number    },
+        zaad:   { label:'رقم Zaad',        number: d.zaad   || DEFAULT_PAYMENT_NUMBERS.zaad.number   },
+        sahal:  { label:'رقم Sahal',       number: d.sahal  || DEFAULT_PAYMENT_NUMBERS.sahal.number  },
+      })
+    }).catch(() => {/* use defaults */})
+  }, [])
 
   const selPlan = PLANS.find(p => p.id === plan) || PLANS[2]
   const monthlyPrice = billing === 'annual' ? selPlan.annualPrice : selPlan.price
@@ -351,9 +368,9 @@ export default function PaymentPage() {
               marginTop:12, background:'#fff', borderRadius:10, padding:'10px 14px',
               fontWeight:700, fontSize:15, color:'#0f172a',
             }}>
-              {PAYMENT_NUMBERS[method].label}:{' '}
+              {paymentNumbers[method].label}:{' '}
               <span style={{ fontFamily:'monospace', color:G }}>
-                {PAYMENT_NUMBERS[method].number}
+                {paymentNumbers[method].number}
               </span>
             </div>
             <div style={{

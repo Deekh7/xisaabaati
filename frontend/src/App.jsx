@@ -21,8 +21,9 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" replace />
 }
 function PublicRoute({ children }) {
-  const { user } = useAuth()
-  return !user ? children : <Navigate to="/app" replace />
+  const { user, isAdmin } = useAuth()
+  if (!user) return children
+  return <Navigate to={isAdmin ? '/app/admin' : '/app'} replace />
 }
 function AdminRoute({ children }) {
   const { user, isAdmin } = useAuth()
@@ -31,8 +32,14 @@ function AdminRoute({ children }) {
   return children
 }
 function RootRoute() {
-  const { user } = useAuth()
-  return user ? <Navigate to="/app" replace /> : <LandingPage />
+  const { user, isAdmin } = useAuth()
+  if (!user) return <LandingPage />
+  return <Navigate to={isAdmin ? '/app/admin' : '/app'} replace />
+}
+// Redirect admin to /app/admin if they somehow land on /app
+function AppIndexRoute() {
+  const { isAdmin } = useAuth()
+  return isAdmin ? <Navigate to="/app/admin" replace /> : <DashboardPage />
 }
 
 export default function App() {
@@ -52,7 +59,7 @@ export default function App() {
 
       {/* ── App (authenticated) ── */}
       <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-        <Route index              element={<DashboardPage />} />
+        <Route index              element={<AppIndexRoute />} />
         <Route path="sales"       element={<SalesPage />} />
         <Route path="products"    element={<ProductsPage />} />
         <Route path="expenses"    element={<ExpensesPage />} />

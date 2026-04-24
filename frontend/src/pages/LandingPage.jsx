@@ -63,9 +63,9 @@ const CONTENT = {
     savedLabel: 'baad badbaadisaa',
     plans: [
       { id:'free',    name:'Bilaash',  price:0,  annualPrice:0,    popular:false, color:'#475569', cta:'Bilow Bilaash',   features:['20 iibsi bishii','Diiwaanka iibka','Maamulka badeecadaha','Maamulka macaamiilka'] },
-      { id:'starter', name:'Bilowga', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'Bilow Hadda',     features:['Iibsi aan xaddidnayn','Diiwaanka kharashka','Warbixinnada asaasiga','Isticmaale keli ah'] },
-      { id:'basic',   name:'Aasaasi', price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'Bilow Hadda',     features:['Wax walba Bilowga','Qaansheegadaha','Warbixinnada horumarsan','Taageero mudnaanta leh'] },
-      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'Bilow Hadda',     features:['Wax walba Aasaasi','Isticmaalayaasha badan','Dajinta Excel/PDF','Maamule gaar ah'] },
+      { id:'starter', name:'Bilowga', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'Bilow Hadda',     features:['Iibsi aan xaddidnayn','Warbixinnada asaasiga','1 isticmaale · 1 laansho','Taageero WhatsApp'] },
+      { id:'basic',   name:'Aasaasi', price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'Bilow Hadda',     features:['Wax walba Bilowga','Warbixinnada horumarsan','3 isticmaale · 3 laansho','Qaansheegadaha'] },
+      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'Bilow Hadda',     features:['Wax walba Aasaasi','7 isticmaale · 7 laansho','Dajinta Excel/PDF','Maamule gaar ah'] },
     ],
     noCreditCard: '✓ Kaarka laguma baahna  ·  ✓ EVC, Zaad, Sahal  ·  ✓ Jooji goor kasta',
     faqTitle: 'Su\'aalaha la badan yahay',
@@ -147,9 +147,9 @@ const CONTENT = {
     savedLabel: 'توفير',
     plans: [
       { id:'free',    name:'مجاني',   price:0,  annualPrice:0,    popular:false, color:'#475569', cta:'ابدأ مجاناً',  features:['20 مبيعة شهرياً','تتبع المبيعات','إدارة المنتجات','إدارة العملاء'] },
-      { id:'starter', name:'المبتدئ', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'ابدأ الآن',   features:['مبيعات غير محدودة','تتبع المصروفات','تقارير أساسية','مستخدم واحد'] },
-      { id:'basic',   name:'الأساسي', price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'ابدأ الآن',   features:['كل مميزات المبتدئ','فواتير غير محدودة','تقارير متقدمة','أولوية الدعم'] },
-      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'ابدأ الآن',   features:['كل مميزات الأساسي','متعدد المستخدمين','تصدير Excel/PDF','مدير حساب مخصص'] },
+      { id:'starter', name:'المبتدئ', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'ابدأ الآن',   features:['مبيعات غير محدودة','تقارير أساسية','1 مستخدم · 1 فرع','دعم واتساب'] },
+      { id:'basic',   name:'الأساسي', price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'ابدأ الآن',   features:['كل مميزات المبتدئ','تقارير متقدمة','3 مستخدمين · 3 فروع','فواتير وأولوية دعم'] },
+      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'ابدأ الآن',   features:['كل مميزات الأساسي','7 مستخدمين · 7 فروع','تصدير Excel/PDF','مدير حساب مخصص'] },
     ],
     noCreditCard: '✓ بدون بطاقة ائتمان  ·  ✓ EVC أو Zaad أو Sahal  ·  ✓ إلغاء في أي وقت',
     faqTitle: 'الأسئلة الشائعة',
@@ -230,9 +230,9 @@ const CONTENT = {
     savedLabel: 'saved',
     plans: [
       { id:'free',    name:'Free',    price:0,  annualPrice:0,    popular:false, color:'#475569', cta:'Start Free',   features:['20 sales/month','Sales tracking','Product management','Customer management'] },
-      { id:'starter', name:'Starter', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'Start Now',   features:['Unlimited sales','Expense tracking','Basic reports','Single user'] },
-      { id:'basic',   name:'Basic',   price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'Start Now',   features:['Everything in Starter','Unlimited invoices','Advanced reports','Priority support'] },
-      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'Start Now',   features:['Everything in Basic','Multi-user','Export Excel/PDF','Dedicated account manager'] },
+      { id:'starter', name:'Starter', price:9,  annualPrice:6.3,  popular:false, color:'#1d4ed8', cta:'Start Now',   features:['Unlimited sales','Basic reports','1 user · 1 branch','WhatsApp support'] },
+      { id:'basic',   name:'Basic',   price:19, annualPrice:13.3, popular:true,  color:'#7c3aed', cta:'Start Now',   features:['Everything in Starter','Advanced reports','3 users · 3 branches','Invoices & priority support'] },
+      { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, popular:false, color:G,         cta:'Start Now',   features:['Everything in Basic','7 users · 7 branches','Export Excel/PDF','Dedicated account manager'] },
     ],
     noCreditCard: '✓ No credit card  ·  ✓ Pay via EVC, Zaad, Sahal  ·  ✓ Cancel anytime',
     faqTitle: 'Frequently Asked Questions',
@@ -718,6 +718,15 @@ export default function LandingPage() {
           <p style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: '#94a3b8' }}>
             {c.noCreditCard}
           </p>
+          {/* Add-ons */}
+          <div style={{ textAlign:'center', marginTop:12, display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+            <span style={{ background:'#f0fdf4', color:G, fontSize:12, fontWeight:700, padding:'5px 14px', borderRadius:20 }}>
+              + {lang==='ar'?'مستخدم إضافي':lang==='so'?'Isticmaale dheeraad ah':'Extra user'} $3/mo
+            </span>
+            <span style={{ background:'#eff6ff', color:'#1d4ed8', fontSize:12, fontWeight:700, padding:'5px 14px', borderRadius:20 }}>
+              + {lang==='ar'?'فرع إضافي':lang==='so'?'Laansho dheeraad ah':'Extra branch'} $5/mo
+            </span>
+          </div>
         </div>
       </section>
 

@@ -87,6 +87,22 @@ service cloud.firestore {
       allow write: if isAuth() && isAdmin();
     }
 
+    // ── settings (admin-configured: payment numbers, etc.) ───────
+    match /settings/{settingId} {
+      allow read:  if isAuth();
+      allow write: if isAuth() && isAdmin();
+    }
+
+    // ── team members (subcollection under users) ──────────────────
+    match /users/{userId}/members/{memberId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // ── branches (subcollection under users) ─────────────────────
+    match /users/{userId}/branches/{branchId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
     // ── catch-all: deny everything else ─────────────────────────
     match /{document=**} {
       allow read, write: if false;
