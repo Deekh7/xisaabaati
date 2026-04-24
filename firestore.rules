@@ -10,8 +10,10 @@ service cloud.firestore {
 
     // ── users ────────────────────────────────────────────────────
     match /users/{userId} {
-      allow read:  if isAuth() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuth() && request.auth.uid == userId;
+      allow read:   if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuth() && request.auth.uid == userId;
+      allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAuth() && isAdmin();
     }
 
     // ── sales ────────────────────────────────────────────────────
