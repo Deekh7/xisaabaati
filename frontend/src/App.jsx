@@ -1,8 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
-import AppLayout    from './components/AppLayout'
-import LandingPage  from './pages/LandingPage'
-import LoginPage    from './pages/LoginPage'
+import AppLayout      from './components/AppLayout'
+import LandingPage    from './pages/LandingPage'
+import LoginPage      from './pages/LoginPage'
+import SignupPage     from './pages/SignupPage'
 import DashboardPage  from './pages/DashboardPage'
 import SalesPage      from './pages/SalesPage'
 import ProductsPage   from './pages/ProductsPage'
@@ -12,6 +13,8 @@ import CustomersPage  from './pages/CustomersPage'
 import SettingsPage   from './pages/SettingsPage'
 import AdminPage      from './pages/AdminPage'
 import PaymentPage    from './pages/PaymentPage'
+import PublicPage     from './pages/PublicPage'
+import ContactPage    from './pages/ContactPage'
 
 function PrivateRoute({ children }) {
   const { user } = useAuth()
@@ -23,8 +26,8 @@ function PublicRoute({ children }) {
 }
 function AdminRoute({ children }) {
   const { user, isAdmin } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  if (!isAdmin) return <Navigate to="/app" replace />
+  if (!user)    return <Navigate to="/login"  replace />
+  if (!isAdmin) return <Navigate to="/app"    replace />
   return children
 }
 function RootRoute() {
@@ -35,9 +38,19 @@ function RootRoute() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/"       element={<RootRoute />} />
-      <Route path="/login"  element={<PublicRoute><LoginPage /></PublicRoute>} />
+      {/* ── Public pages ── */}
+      <Route path="/"        element={<RootRoute />} />
+      <Route path="/login"   element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path="/signup"  element={<PublicRoute><SignupPage /></PublicRoute>} />
 
+      {/* ── Footer / Info pages ── */}
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/about"   element={<PublicPage />} />
+      <Route path="/vision"  element={<PublicPage />} />
+      <Route path="/privacy" element={<PublicPage />} />
+      <Route path="/terms"   element={<PublicPage />} />
+
+      {/* ── App (authenticated) ── */}
       <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
         <Route index              element={<DashboardPage />} />
         <Route path="sales"       element={<SalesPage />} />
@@ -47,7 +60,9 @@ export default function App() {
         <Route path="reports"     element={<ReportsPage />} />
         <Route path="settings"    element={<SettingsPage />} />
         <Route path="payment"     element={<PaymentPage />} />
-        <Route path="admin"       element={<AdminRoute><AdminPage /></AdminRoute>} />
+
+        {/* ── Admin (nested routes) ── */}
+        <Route path="admin/*" element={<AdminRoute><AdminPage /></AdminRoute>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

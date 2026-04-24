@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقرير فحص موقع Xisaabaati</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.8;
+    padding: 0 0 60px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    padding: 50px 40px 40px;
+    text-align: center;
+  }
+  .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+  .hero p { font-size: 1rem; opacity: 0.9; }
+  .hero .meta { margin-top: 16px; font-size: 0.85rem; opacity: 0.75; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .summary-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    border-top: 4px solid #16a34a;
+  }
+  .summary-card .num { font-size: 2rem; font-weight: 800; color: #16a34a; }
+  .summary-card .lbl { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
+  .section {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #f1f5f9;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    background: #f0fdf4;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 1.15rem; font-weight: 700; }
+  .section-subtitle { font-size: 0.8rem; color: #64748b; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th {
+    background: #f8fafc;
+    padding: 10px 14px;
+    text-align: right;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-red { background: #fee2e2; color: #dc2626; }
+  .badge-yellow { background: #fef9c3; color: #a16207; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  .warn { color: #d97706; font-weight: 700; }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+  }
+  .feature-item .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .feature-item .text { font-size: 0.88rem; }
+  .feature-item .text strong { display: block; font-weight: 600; margin-bottom: 2px; }
+  .payment-methods {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .payment-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .payment-card .name { font-weight: 700; font-size: 0.95rem; }
+  .payment-card .detail { font-size: 0.82rem; color: #059669; margin-top: 4px; }
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+  }
+  .score-label { font-size: 0.88rem; width: 160px; flex-shrink: 0; }
+  .score-track {
+    flex: 1;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #16a34a, #22c55e);
+    border-radius: 20px;
+    transition: width 1s;
+  }
+  .score-value { font-size: 0.85rem; font-weight: 700; color: #16a34a; width: 36px; text-align: left; }
+  .verdict {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 2px solid #16a34a;
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+  .verdict .big { font-size: 3rem; }
+  .verdict h3 { font-size: 1.3rem; font-weight: 800; color: #15803d; margin: 8px 0; }
+  .verdict p { color: #374151; font-size: 0.95rem; max-width: 620px; margin: 0 auto; }
+  .account-info {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-right: 4px solid #16a34a;
+  }
+  .account-info .email { font-weight: 700; font-size: 0.95rem; }
+  .account-info .detail { font-size: 0.82rem; color: #64748b; margin-top: 4px; }
+  ul.check-list { list-style: none; padding: 0; }
+  ul.check-list li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  ul.check-list li::before { content: '✓'; color: #16a34a; font-weight: 800; flex-shrink: 0; }
+  ul.warn-list { list-style: none; padding: 0; }
+  ul.warn-list li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  ul.warn-list li::before { content: '⚠'; color: #d97706; flex-shrink: 0; }
+  .divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
+  @media (max-width: 600px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-grid { grid-template-columns: 1fr; }
+    .payment-methods { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>📊 تقرير فحص موقع Xisaabaati</h1>
+  <p>فحص شامل لـ www.xisaabaati.com — تقييم التوافق مع فكرة المشروع</p>
+  <div class="meta">تاريخ الفحص: 23 أبريل 2026 · فحص يدوي كامل بإنشاء حسابات حقيقية واختبار جميع الميزات</div>
+</div>
+
+<div class="container">
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="num">14</div>
+      <div class="lbl">صفحة/ميزة تم فحصها</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">3</div>
+      <div class="lbl">حساب تم اختباره</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">3</div>
+      <div class="lbl">لغات مدعومة</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">4</div>
+      <div class="lbl">طرق دفع محلية</div>
+    </div>
+  </div>
+
+  <!-- Accounts Created -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <div>
+        <div class="section-title">الحسابات المُنشأة للاختبار</div>
+        <div class="section-subtitle">تم التحقق من إنشاء الحسابات وعزل البيانات</div>
+      </div>
+    </div>
+    <div class="account-info">
+      <div class="email">tester1.xisaabaati@gmail.com</div>
+      <div class="detail">الاسم: تاجر تجريبي · النشاط: دكان الاختبار · النوع: دكان · الخطة: مجاني</div>
+      <div class="detail">البيانات المُضافة: منتج (شاي هيل)، مبيعات، عميل (Axmed Cali)</div>
+    </div>
+    <div class="account-info">
+      <div class="email">tester2.xisaabaati@gmail.com</div>
+      <div class="detail">الاسم: محمد علي · النشاط: مطعم النجوم · النوع: مطعم · الخطة: مجاني</div>
+      <div class="detail">عزل البيانات: <span class="check">✓ مؤكد</span> — يبدأ الحساب الثاني فارغاً تماماً بدون أي بيانات من الحساب الأول</div>
+    </div>
+  </div>
+
+  <!-- Landing Page -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏠</div>
+      <div>
+        <div class="section-title">الصفحة الرئيسية (Landing Page)</div>
+        <div class="section-subtitle">www.xisaabaati.com</div>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="icon">🌍</div>
+        <div class="text"><strong>تعدد اللغات</strong>الصومالية (افتراضي) · العربية · الإنجليزية — مع أعلام الدول</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">💬</div>
+        <div class="text"><strong>الرسالة التسويقية</strong>"تبيع كل يوم... بس هل تعرف كم ربحت؟" — قوية ومستهدفة</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">💳</div>
+        <div class="text"><strong>لا بطاقة ائتمانية</strong>رسالة "لا حاجة لبطاقة ائتمان" واضحة عند زر التسجيل</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📱</div>
+        <div class="text"><strong>تصميم متجاوب</strong>يعمل على الشاشات الكبيرة والصغيرة بشكل جيد</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration & Auth -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔐</div>
+      <div>
+        <div class="section-title">التسجيل وتسجيل الدخول</div>
+        <div class="section-subtitle">Firebase Authentication</div>
+      </div>
+    </div>
+    <table>
+      <tr><th>العنصر</th><th>النتيجة</th><th>الملاحظة</th></tr>
+      <tr><td>نموذج التسجيل</td><td><span class="badge badge-green">يعمل ✓</span></td><td>5 حقول: الاسم، النشاط، النوع، الإيميل، كلمة المرور</td></tr>
+      <tr><td>أنواع النشاط</td><td><span class="badge badge-green">4 أنواع</span></td><td>دكان · مطعم · صيدلية · خدمات</td></tr>
+      <tr><td>التسجيل الفوري</td><td><span class="badge badge-green">فوري ✓</span></td><td>لا يوجد تحقق من البريد الإلكتروني — دخول مباشر</td></tr>
+      <tr><td>تسجيل الدخول</td><td><span class="badge badge-green">يعمل ✓</span></td><td>إيميل + كلمة مرور</td></tr>
+      <tr><td>تسجيل الخروج</td><td><span class="badge badge-green">يعمل ✓</span></td><td>زر "Ka Bax / خروج" في الإعدادات</td></tr>
+      <tr><td>التحويل بعد الدخول</td><td><span class="badge badge-green">يعمل ✓</span></td><td>يُحوَّل الزوار المُسجَّلون مباشرة للتطبيق</td></tr>
+    </table>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div>
+        <div class="section-title">لوحة التحكم (Dashboard)</div>
+        <div class="section-subtitle">الصفحة الرئيسية بعد الدخول</div>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="icon">💰</div>
+        <div class="text"><strong>ربح اليوم</strong>يُعرض بشكل بارز بالخط الأخضر الكبير — الأهم للتاجر</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📈</div>
+        <div class="text"><strong>مخطط 7 أيام</strong>رسم بياني أسبوعي للمبيعات مع إبراز اليوم الحالي</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🎯</div>
+        <div class="text"><strong>هامش الربح %</strong>مخطط دائري يوضح نسبة الربح مقارنة بالمصروفات</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🏆</div>
+        <div class="text"><strong>أفضل المنتجات</strong>قائمة بأكثر المنتجات ربحاً مع الكميات والأرقام</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">⚡</div>
+        <div class="text"><strong>زر "إضافة بيعة" السريع</strong>شريط أخضر كبير في أعلى الصفحة للوصول الفوري</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📋</div>
+        <div class="text"><strong>آخر المبيعات</strong>قائمة بأحدث العمليات مع رابط "مشاهدة الكل"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Pages -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <div>
+        <div class="section-title">صفحات التطبيق — فحص تفصيلي</div>
+        <div class="section-subtitle">5 تبويبات رئيسية في شريط التنقل السفلي</div>
+      </div>
+    </div>
+    <table>
+      <tr>
+        <th>الصفحة</th>
+        <th>الحالة</th>
+        <th>الميزات الرئيسية</th>
+        <th>الخطة المطلوبة</th>
+      </tr>
+      <tr>
+        <td><strong>🏠 الرئيسية (Guriga)</strong></td>
+        <td><span class="badge badge-green">يعمل ✓</span></td>
+        <td>ربح اليوم، مخطط 7 أيام، هامش الربح، أفضل المنتجات، آخر المبيعات</td>
+        <td><span class="badge badge-green">مجاني</span></td>
+      </tr>
+      <tr>
+        <td><strong>🛍 المبيعات (Iibka)</strong></td>
+        <td><span class="badge badge-green">يعمل ✓</span></td>
+        <td>إضافة بيع بربط المنتج، حساب ربح فوري، إجمالي اليوم، بحث، حذف</td>
+        <td><span class="badge badge-green">مجاني</span></td>
+      </tr>
+      <tr>
+        <td><strong>📦 المنتجات (Badeecadaha)</strong></td>
+        <td><span class="badge badge-green">يعمل ✓</span></td>
+        <td>إضافة/تعديل/حذف، سعر التكلفة + سعر البيع، هامش ربح حي، الكمية، الفئة، شريط المخزون</td>
+        <td><span class="badge badge-green">مجاني</span></td>
+      </tr>
+      <tr>
+        <td><strong>💸 المصروفات (Kharashka)</strong></td>
+        <td><span class="badge badge-yellow">مقفول 🔒</span></td>
+        <td>تتبع المصروفات اليومية</td>
+        <td><span class="badge badge-yellow">مدفوع</span></td>
+      </tr>
+      <tr>
+        <td><strong>⚙️ الإعدادات (Goobaha)</strong></td>
+        <td><span class="badge badge-green">يعمل ✓</span></td>
+        <td>معلومات الحساب، الخطة، اللغة (EN/SO/AR)، روابط للعملاء والتقارير، تسجيل الخروج</td>
+        <td><span class="badge badge-green">مجاني</span></td>
+      </tr>
+      <tr>
+        <td><strong>👥 العملاء (Macaamiil)</strong></td>
+        <td><span class="badge badge-green">يعمل ✓</span></td>
+        <td>إضافة/تعديل/حذف، الاسم + هاتف (+252) + بريد، أفاتار تلقائي</td>
+        <td><span class="badge badge-green">مجاني</span></td>
+      </tr>
+      <tr>
+        <td><strong>📊 التقارير (Warbixinnada)</strong></td>
+        <td><span class="badge badge-yellow">مقفول 🔒</span></td>
+        <td>تقارير المبيعات والأرباح التفصيلية</td>
+        <td><span class="badge badge-yellow">مدفوع</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Key UX Features -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">✨</div>
+      <div>
+        <div class="section-title">ميزات UX المميزة</div>
+        <div class="section-subtitle">تفاصيل تجربة المستخدم التي لفتت الانتباه</div>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="icon">⚡</div>
+        <div class="text"><strong>حساب الربح الحي في المنتجات</strong>عند إدخال سعر التكلفة والبيع، يظهر فوراً: "Faa'iidada %: $2.50 (50%)" — بدون الحاجة للحفظ أولاً</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🔗</div>
+        <div class="text"><strong>ربط المنتج بالمبيعة تلقائياً</strong>عند اختيار منتج من القائمة المنسدلة، يُملأ السعر والربح تلقائياً — المستخدم يضغط فقط "حفظ"</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📊</div>
+        <div class="text"><strong>شريط المخزون المرئي</strong>عرض الكمية المتبقية كشريط بياني أخضر يُقلل مع كل بيعة</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🌐</div>
+        <div class="text"><strong>تبديل اللغة الفوري</strong>الواجهة تتحوّل بالكامل لـ RTL عند اختيار العربية — بما فيها شريط التنقل السفلي</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📱</div>
+        <div class="text"><strong>بادئة الهاتف الصومالي</strong>حقل هاتف العميل يبدأ بـ "+252" تلقائياً — ملائم لجمهور الصومال</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🏷</div>
+        <div class="text"><strong>أفاتار تلقائي</strong>كل عميل يحصل على دائرة ملونة بحرف اسمه الأول — مظهر احترافي بدون صور</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment System -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💳</div>
+      <div>
+        <div class="section-title">نظام الدفع والاشتراكات</div>
+        <div class="section-subtitle">نقطة قوة رئيسية: طرق دفع محلية صومالية</div>
+      </div>
+    </div>
+    <table style="margin-bottom:20px">
+      <tr><th>الخطة</th><th>السعر</th><th>المميزات</th></tr>
+      <tr>
+        <td><strong>مجاني (Bilaash)</strong></td>
+        <td><span class="badge badge-green">$0</span></td>
+        <td>الرئيسية، المبيعات، المنتجات، العملاء، الإعدادات</td>
+      </tr>
+      <tr>
+        <td><strong>Basic ♦</strong></td>
+        <td><span class="badge badge-blue">$12/شهر</span></td>
+        <td>فواتير غير محدودة · مستخدم واحد</td>
+      </tr>
+      <tr>
+        <td><strong>Pro ♦ (الأشهر)</strong></td>
+        <td><span class="badge badge-blue">$25/شهر</span></td>
+        <td>التقارير · متعدد المستخدمين · كل الميزات</td>
+      </tr>
+      <tr>
+        <td><strong>مستخدم إضافي</strong></td>
+        <td><span class="badge badge-blue">$2.5/مستخدم/شهر</span></td>
+        <td>إمكانية دعوة أعضاء الفريق للتعاون</td>
+      </tr>
+    </table>
+    <p style="font-weight:600; margin-bottom:12px; font-size:0.9rem;">طرق الدفع المقبولة — ملائمة تماماً للسوق الصومالي:</p>
+    <div class="payment-methods">
+      <div class="payment-card">
+        <div class="name">💬 واتساب يدوي</div>
+        <div class="detail">أرسل المال ← أرسل لقطة الشاشة للمسؤول ← يتم التفعيل يدوياً</div>
+      </div>
+      <div class="payment-card">
+        <div class="name">📱 EVC Plus</div>
+        <div class="detail">Hormuud Telecom · اتصل بـ *712# (جنوب الصومال)</div>
+      </div>
+      <div class="payment-card">
+        <div class="name">💳 Zaad</div>
+        <div class="detail">Telesom · اتصل بـ *880# (صوماليلاند)</div>
+      </div>
+      <div class="payment-card">
+        <div class="name">💳 Sahal</div>
+        <div class="detail">Somtel · اتصل بـ *567#</div>
+      </div>
+    </div>
+    <div style="margin-top:14px; padding:12px 16px; background:#fef9c3; border-radius:10px; font-size:0.85rem; color:#92400e;">
+      <strong>⚠ ملاحظة:</strong> عملية الدفع يدوية (Admin verifies) — المستخدم يدفع ثم ينتظر تأكيداً يدوياً من الإدارة. هذا يعني تأخيراً محتملاً في التفعيل.
+    </div>
+  </div>
+
+  <!-- Compatibility Assessment -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🎯</div>
+      <div>
+        <div class="section-title">تقييم التوافق مع فكرة المشروع</div>
+        <div class="section-subtitle">هل الموقع يحقق ما صُمم من أجله؟</div>
+      </div>
+    </div>
+    <div class="score-bar"><div class="score-label">التوافق مع السوق المستهدف</div><div class="score-track"><div class="score-fill" style="width:95%"></div></div><div class="score-value">95%</div></div>
+    <div class="score-bar"><div class="score-label">سهولة الاستخدام (UX)</div><div class="score-track"><div class="score-fill" style="width:88%"></div></div><div class="score-value">88%</div></div>
+    <div class="score-bar"><div class="score-label">جودة الميزات الأساسية</div><div class="score-track"><div class="score-fill" style="width:85%"></div></div><div class="score-value">85%</div></div>
+    <div class="score-bar"><div class="score-label">توطين اللغة والثقافة</div><div class="score-track"><div class="score-fill" style="width:92%"></div></div><div class="score-value">92%</div></div>
+    <div class="score-bar"><div class="score-label">نموذج الإيرادات (Freemium)</div><div class="score-track"><div class="score-fill" style="width:80%"></div></div><div class="score-value">80%</div></div>
+    <div class="score-bar"><div class="score-label">الاستقرار التقني</div><div class="score-track"><div class="score-fill" style="width:82%"></div></div><div class="score-value">82%</div></div>
+    <div class="divider"></div>
+    <p style="font-size:0.9rem; color:#374151;">
+      <strong>فكرة المشروع الأصلية:</strong> تطبيق محاسبة بسيط للتجار الصغار في الصومال وشرق أفريقيا — يتيح تتبع المبيعات والأرباح بسهولة دون خلفية محاسبية. الموقع الإنتاجي يُترجم هذه الفكرة بشكل ناجح جداً.
+    </p>
+  </div>
+
+  <!-- Strengths -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💪</div>
+      <div>
+        <div class="section-title">نقاط القوة</div>
+        <div class="section-subtitle">ما يعمل بشكل ممتاز</div>
+      </div>
+    </div>
+    <ul class="check-list">
+      <li>توطين ممتاز: 3 لغات (الصومالية كلغة أساسية + العربية + الإنجليزية) مع دعم RTL كامل</li>
+      <li>طرق دفع محلية (EVC Plus, Zaad, Sahal) — لا يوجد Stripe أو PayPal لأنهما لا يعملان في الصومال</li>
+      <li>حساب الربح الفوري عند إدخال بيانات المنتج — ميزة ذكية تعلّم التاجر عن هامشه فوراً</li>
+      <li>ربط المنتج بالمبيعة تلقائياً يسرّع العملية ويقلل الأخطاء</li>
+      <li>واجهة نظيفة وحديثة لا تُرهق المستخدم — مناسبة للتجار غير التقنيين</li>
+      <li>عزل البيانات بين الحسابات يعمل بشكل صحيح (Firebase Firestore per-user)</li>
+      <li>الخطة المجانية مُجزية: المبيعات + المنتجات + العملاء + لوحة التحكم الكاملة</li>
+      <li>دعم متعدد المستخدمين في خطة Pro ($2.5/مستخدم) — مناسب لمحلات بها موظفين</li>
+      <li>تصميم متجاوب يعمل على الهاتف والحاسوب</li>
+      <li>أنواع النشاط (دكان، مطعم، صيدلية، خدمات) تعكس فهماً جيداً لطبيعة المستخدمين</li>
+    </ul>
+  </div>
+
+  <!-- Weaknesses -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚠️</div>
+      <div>
+        <div class="section-title">نقاط الضعف والملاحظات</div>
+        <div class="section-subtitle">مجالات تحتاج تحسيناً</div>
+      </div>
+    </div>
+    <ul class="warn-list">
+      <li><strong>قفل المصروفات والتقارير على الخطة المجانية</strong> — هذان العنصران أساسيان لأي تاجر جاد، وحجبهما يُقلل من قيمة الخطة المجانية</li>
+      <li><strong>الدفع يدوي وليس آلياً</strong> — المستخدم يدفع وينتظر تأكيداً من الإدارة، مما يُشكل عائقاً في تجربة الترقية</li>
+      <li><strong>تناقض الأسعار</strong> — الصفحة الرئيسية تذكر أسعاراً مختلفة عما يظهر داخل التطبيق (Basic $12 / Pro $25 في التطبيق)</li>
+      <li><strong>اسم المستخدم لا يظهر في الإعدادات</strong> — حساب tester1 يُظهر "—" بدلاً من الاسم في قسم الملف الشخصي</li>
+      <li><strong>لا يوجد تحقق من البريد الإلكتروني</strong> — يمكن التسجيل بأي بريد إلكتروني دون التحقق منه</li>
+      <li><strong>لا توجد ميزة الفاتورة/الإيصال</strong> في الخطة المجانية — التجار يحتاجون إرسال إيصال للزبون</li>
+      <li><strong>لا يوجد نسخ احتياطي أو تصدير للبيانات</strong> — لم تظهر أي إمكانية لتصدير البيانات إلى Excel أو PDF</li>
+      <li><strong>🚨 خلل حرج: Backend API معطوب في الإنتاج</strong> — جميع نقاط API على <code>xisaabaati.vercel.app</code> لا تستجيب (timeout)، مما يُعطّل لوحة الإدارة الكاملة وعملية قبول المدفوعات</li>
+    </ul>
+  </div>
+
+  <!-- Admin Panel Section -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🛡️</div>
+      <div>
+        <div class="section-title">لوحة الإدارة — Maamulka (حساب deekh57@gmail.com)</div>
+        <div class="section-subtitle">فحص شامل من جميع النواحي لحساب الأدمن</div>
+      </div>
+    </div>
+
+    <!-- Admin Login -->
+    <p style="font-weight:700; font-size:0.95rem; margin-bottom:10px; color:#0f172a;">① تسجيل الدخول كأدمن</p>
+    <table style="margin-bottom:20px">
+      <tr><th>العنصر</th><th>النتيجة</th><th>الملاحظة</th></tr>
+      <tr><td>تسجيل الدخول</td><td><span class="badge badge-green">نجح ✓</span></td><td>deekh57@gmail.com / admin123 — دخول فوري</td></tr>
+      <tr><td>مسار الأدمن</td><td><span class="badge badge-green">صحيح ✓</span></td><td>الموقع: <code>/app/admin</code> (وليس <code>/admin</code>) — محمي بـ Firebase Custom Claim</td></tr>
+      <tr><td>التحقق من الصلاحية</td><td><span class="badge badge-green">يعمل ✓</span></td><td>Firebase Custom Claim <code>admin: true</code> — غير الأدمن لا يصل لهذه الصفحة</td></tr>
+      <tr><td>الواجهة العربية</td><td><span class="badge badge-green">يعمل ✓</span></td><td>اللغة المختارة تنعكس على لوحة الإدارة تلقائياً</td></tr>
+    </table>
+
+    <!-- Admin Panel Structure -->
+    <p style="font-weight:700; font-size:0.95rem; margin-bottom:10px; color:#0f172a;">② هيكل لوحة الإدارة — 3 تبويبات</p>
+    <div class="feature-grid" style="margin-bottom:20px">
+      <div class="feature-item">
+        <div class="icon">💳</div>
+        <div class="text"><strong>Lacag bixinta (المدفوعات)</strong>عرض طلبات الدفع: Pending / Approved / Rejected / All — مع أزرار قبول أو رفض مع سبب</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">👥</div>
+        <div class="text"><strong>Isticmaalayaasha (المستخدمون)</strong>عرض كل المستخدمين، البحث فيهم، تغيير الخطة (free/starter/pro)، حجب/رفع الحجب</div>
+      </div>
+      <div class="feature-item">
+        <div class="icon">✉️</div>
+        <div class="text"><strong>Farriimaha (الرسائل)</strong>رسائل التواصل من نموذج الموقع — مع زر "Reply via WhatsApp" مباشرة لكل رسالة</div>
+      </div>
+    </div>
+
+    <!-- Admin Capabilities (from code) -->
+    <p style="font-weight:700; font-size:0.95rem; margin-bottom:10px; color:#0f172a;">③ صلاحيات الأدمن (من تحليل الكود)</p>
+    <table style="margin-bottom:20px">
+      <tr><th>الصلاحية</th><th>المسار</th><th>الوصف</th></tr>
+      <tr><td>عرض المدفوعات</td><td><code>GET /api/payments/all</code></td><td>فلترة بالحالة: pending / approved / rejected</td></tr>
+      <tr><td>قبول الدفع</td><td><code>POST /api/payments/approve</code></td><td>يرقّي خطة المستخدم تلقائياً عند القبول</td></tr>
+      <tr><td>رفض الدفع</td><td><code>POST /api/payments/reject</code></td><td>إرسال سبب الرفض للمستخدم</td></tr>
+      <tr><td>عرض المستخدمين</td><td><code>GET /admin/users</code></td><td>قائمة كاملة بجميع الحسابات مع الخطة والتجربة</td></tr>
+      <tr><td>تغيير الخطة</td><td><code>POST /admin/update-plan</code></td><td>الأدمن يُرقّي أو يُخفّض خطة أي مستخدم</td></tr>
+      <tr><td>حجب/رفع الحجب</td><td><code>POST /admin/block-user</code></td><td>حجب حساب أو رفع الحجب عنه</td></tr>
+      <tr><td>إحصائيات</td><td><code>GET /admin/stats</code></td><td>إجمالي المستخدمين، المشتركين المدفوعين، في التجربة، MRR</td></tr>
+      <tr><td>عرض الرسائل</td><td><code>GET /admin/messages</code></td><td>رسائل التواصل مع إمكانية الرد عبر واتساب</td></tr>
+    </table>
+
+    <!-- Critical Bug -->
+    <div style="background:#fef2f2; border: 2px solid #fca5a5; border-radius:14px; padding:20px; margin-bottom:0;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <span style="font-size:1.5rem;">🚨</span>
+        <strong style="color:#dc2626; font-size:1rem;">خلل حرج: الـ Backend API معطوب كلياً في الإنتاج</strong>
+      </div>
+      <p style="font-size:0.9rem; color:#7f1d1d; margin-bottom:12px; line-height:1.7;">
+        جميع تبويبات لوحة الإدارة تعرض مؤشر تحميل دوار ولا تُظهر بيانات أبداً. بعد التحقيق التقني التفصيلي، تبيّن أن:
+      </p>
+      <ul style="font-size:0.87rem; color:#991b1b; line-height:2; padding-right:20px;">
+        <li>طلبات API تتجه إلى <code>https://xisaabaati.vercel.app</code> — وتظل في حالة <strong>pending</strong> إلى الأبد</li>
+        <li>حتى نقطة الصحة <code>/health</code> لا تستجيب بعد 10 ثوانٍ (timeout كامل)</li>
+        <li>الدالة serverless المُغلّفة لـ Express في <code>/api/index.js</code> تتجمّد عند التهيئة</li>
+        <li>السبب الأرجح: متغير البيئة <code>FIREBASE_SERVICE_ACCOUNT</code> غير مضبوط صحيحاً في Vercel Production، مما يجعل Firebase Admin SDK يتجمّد عند التهيئة ويمنع الاستجابة لأي طلب</li>
+      </ul>
+      <p style="font-size:0.87rem; color:#7f1d1d; margin-top:12px; font-weight:600;">
+        التأثير: لوحة الإدارة كاملة غير صالحة للاستخدام · نظام قبول/رفض المدفوعات معطوب · لا يمكن للأدمن إدارة المستخدمين
+      </p>
+      <div style="margin-top:12px; background:#fff; border-radius:10px; padding:12px 16px; font-size:0.83rem; color:#374151;">
+        <strong>الحل المقترح:</strong> التحقق من إعدادات Environment Variables في Vercel Dashboard → Project Settings → Environment Variables → التأكد من وجود <code>FIREBASE_SERVICE_ACCOUNT</code> كـ JSON سليم، أو <code>FIREBASE_PROJECT_ID</code> + <code>FIREBASE_PRIVATE_KEY</code> + <code>FIREBASE_CLIENT_EMAIL</code> بشكل منفصل.
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Verdict -->
+  <div class="verdict">
+    <div class="big">✅</div>
+    <h3>التقييم النهائي: متوافق مع فكرة المشروع بقوة</h3>
+    <p>
+      xisaabaati.com يُجسّد فكرة المشروع بشكل ناجح جداً. يُقدم نظام محاسبة بسيطاً وعملياً للتجار الصغار في الصومال وشرق أفريقيا، مع توطين ممتاز للغة والعملة وطرق الدفع. الميزات الأساسية (المبيعات، المنتجات، العملاء) متاحة مجاناً وتعمل بشكل موثوق. التطبيق جاهز للاستخدام الفعلي ويحقق الهدف المُعلن: "اعرف ربحك في ثواني".
+    </p>
+    <div style="margin-top:14px; background:rgba(220,38,38,0.08); border-radius:12px; padding:12px 16px; font-size:0.87rem; color:#991b1b; text-align:right;">
+      <strong>⚠ تحذير عاجل:</strong> لوحة الإدارة (Maamulka) ونظام قبول المدفوعات معطوبان بالكامل في الإنتاج بسبب عطل في الـ Backend API. يجب إصلاحه قبل استقبال أي مدفوعات حقيقية.
+    </div>
+    <div style="margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <span class="badge badge-green" style="padding:6px 14px; font-size:0.85rem;">التقنية: React + Firebase ✓</span>
+      <span class="badge badge-green" style="padding:6px 14px; font-size:0.85rem;">التوطين: ممتاز ✓</span>
+      <span class="badge badge-green" style="padding:6px 14px; font-size:0.85rem;">عزل البيانات ✓</span>
+      <span class="badge badge-yellow" style="padding:6px 14px; font-size:0.85rem;">الدفع: يدوي ⚠</span>
+      <span class="badge badge-yellow" style="padding:6px 14px; font-size:0.85rem;">التقارير: مقفولة ⚠</span>
+      <span class="badge badge-red" style="padding:6px 14px; font-size:0.85rem; background:#fef2f2; color:#dc2626; border:1.5px solid #fca5a5;">Backend API: معطوب 🚨</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

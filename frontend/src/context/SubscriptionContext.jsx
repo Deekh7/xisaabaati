@@ -1,103 +1,74 @@
-// ─────────────────────────────────────────────
-//  SubscriptionContext.jsx
-//  Provides plan status to all components.
-//  Drop this in alongside AuthContext.
-// ─────────────────────────────────────────────
+// SubscriptionContext.jsx — Firestore-based (no backend API)
+import { createContext, useContext, useMemo } from 'react'
+import { useAuth } from './AuthContext'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+const SubscriptionContext = createContext(null)
 
-const SubscriptionContext = createContext(null);
+// Plan definitions — single source of truth on the client
+export const PLAN_DEFS = {
+  free:    { id:'free',    name:'Free',    price:0,  annualPrice:0,    features:{ reports:false, expenses:false, invoiceLimit:20,   multiUser:false } },
+  starter: { id:'starter', name:'Starter', price:9,  annualPrice:6.3,  features:{ reports:true,  expenses:true,  invoiceLimit:null, multiUser:false } },
+  basic:   { id:'basic',   name:'Basic',   price:19, annualPrice:13.3, features:{ reports:true,  expenses:true,  invoiceLimit:null, multiUser:false } },
+  pro:     { id:'pro',     name:'Pro',     price:39, annualPrice:27.3, features:{ reports:true,  expenses:true,  invoiceLimit:null, multiUser:true  } },
+}
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+function resolveUserPlan(profile) {
+  const plan = profile?.plan || 'free'
+  const trialEndsAt = profile?.trialEndsAt
+  const now = new Date()
+
+  let isTrialActive = false
+  let trialDaysLeft = 0
+  let trialExpired  = false
+
+  if (trialEndsAt) {
+    const end = new Date(trialEndsAt)
+    if (end > now) {
+      isTrialActive = true
+      trialDaysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+    } else if (plan === 'free') {
+      trialExpired = true
+    }
+  }
+
+  const effectivePlan = isTrialActive ? 'pro' : plan
+  const features = PLAN_DEFS[effectivePlan]?.features || PLAN_DEFS.free.features
+
+  return { effectivePlan, isTrialActive, trialDaysLeft, trialExpired, features }
+}
 
 export function SubscriptionProvider({ children }) {
-  const { user } = useAuth();
+  const { profile } = useAuth()
 
-  const [sub, setSub] = useState(null);      // raw API response
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const sub = useMemo(() => {
+    if (!profile) return null
+    return resolveUserPlan(profile)
+  }, [profile])
 
-  const fetchStatus = useCallback(async () => {
-    if (!user) { setSub(null); setLoading(false); return; }
-    try {
-      setLoading(true);
-      const token = await user.getIdToken();
-      const res = await fetch(`${API}/api/subscription/status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Failed to fetch subscription');
-      const data = await res.json();
-      setSub(data);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => { fetchStatus(); }, [fetchStatus]);
-
-  // ── Derived helpers ──────────────────────────
-
-  /** Effective plan id ("pro" during trial, else "free"|"basic"|"pro") */
-  const effectivePlan = sub?.effectivePlan || 'free';
-
-  /** Is the trial currently running? */
-  const isTrialActive = sub?.isTrialActive || false;
-
-  /** Days left in trial (0 if not in trial) */
-  const trialDaysLeft = sub?.trialDaysLeft || 0;
-
-  /** Did the trial expire without upgrading? */
-  const trialExpired = sub?.trialExpired || false;
-
-  /** Was the trial force-ended (50 invoice bonus rule)? */
-  const trialForceEnded = sub?.trialForceEnded || false;
-
-  /** Can the user create more invoices? */
-  const canCreateInvoice = (() => {
-    if (!sub) return true; // optimistic
-    const limit = sub.features?.invoiceLimit;       // null = unlimited
-    if (limit === null) return true;
-    return (sub.invoicesCount || 0) < limit;
-  })();
-
-  /** Can the user access reports? */
-  const canViewReports = sub?.features?.reports || false;
-
-  /** Upgrade helper — calls backend */
-  const upgradePlan = async (plan) => {
-    const token = await user.getIdToken();
-    const res = await fetch(`${API}/api/subscription/upgrade`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Upgrade failed');
-    await fetchStatus(); // refresh
-    return data;
-  };
+  const effectivePlan    = sub?.effectivePlan   || 'free'
+  const isTrialActive    = sub?.isTrialActive   || false
+  const trialDaysLeft    = sub?.trialDaysLeft   || 0
+  const trialExpired     = sub?.trialExpired    || false
+  const canViewReports   = sub?.features?.reports  || false
+  const canViewExpenses  = sub?.features?.expenses || false
+  const invoiceLimit     = sub?.features?.invoiceLimit ?? 20
+  const canCreateInvoice = invoiceLimit === null || (profile?.invoicesCount || 0) < invoiceLimit
 
   return (
     <SubscriptionContext.Provider value={{
-      sub, loading, error, fetchStatus,
+      sub, loading: !profile, error: null,
       effectivePlan, isTrialActive, trialDaysLeft,
-      trialExpired, trialForceEnded,
-      canCreateInvoice, canViewReports,
-      upgradePlan,
-      invoicesCount: sub?.invoicesCount || 0,
-      invoiceLimit: sub?.features?.invoiceLimit ?? null,
-      availablePlans: sub?.availablePlans || [],
+      trialExpired, canCreateInvoice, canViewReports, canViewExpenses,
+      invoicesCount: profile?.invoicesCount || 0,
+      invoiceLimit,
     }}>
       {children}
     </SubscriptionContext.Provider>
-  );
+  )
 }
 
 export const useSubscription = () => {
-  const ctx = useContext(SubscriptionContext);
-  if (!ctx) throw new Error('useSubscription must be inside SubscriptionProvider');
-  return ctx;
-};
+  const ctx = useContext(SubscriptionContext)
+  if (!ctx) throw new Error('useSubscription must be inside SubscriptionProvider')
+  return ctx
+}
