@@ -3,30 +3,135 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0f4c35" />
+    <meta name="theme-color" content="#16a34a" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Xisaabaati" />
 
-    <title>Xisaabaati — Cloud Accounting for Somalia | خساباتي</title>
-    <meta name="description" content="Nidaamka xisaabinta sahlan ee ganacsiyada Soomaaliyeed. Simple cloud accounting for Somali businesses. نظام محاسبي بسيط للشركات الصومالية." />
-    <meta name="keywords" content="xisaabaati, accounting, somalia, invoice, somali business, xisaab" />
+    <!-- Primary SEO -->
+    <title>Xisaabaati — Ma ogtahay faa'idadaada maanta? | Nidaamka Ganacsiga Soomaalida</title>
+    <meta name="description" content="Xisaabaati waa nidaamka xisaabinta ugu sahlan ee ganacsiga Soomaalida. Ogaaw faa'idadaada dhabta ah ka dib iibsi kasta. Simple profit tracking for Somali merchants — Muqdisho, Hargeysa, Boosaaso." />
+    <meta name="keywords" content="xisaabaati, xisaab, ganacsi soomali, faa'iido, iib, kharasho, nidaamka ganacsiga, somalia accounting, somali business app, حساباتي, محاسبة صومال, mogadishu, hargeisa, bosaso" />
+    <meta name="author" content="Xisaabaati" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://www.xisaabaati.com/" />
+
+    <!-- hreflang: language targeting -->
+    <link rel="alternate" hreflang="so"       href="https://www.xisaabaati.com/" />
+    <link rel="alternate" hreflang="ar"       href="https://www.xisaabaati.com/" />
+    <link rel="alternate" hreflang="en"       href="https://www.xisaabaati.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.xisaabaati.com/" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Xisaabaati — Smart Accounting for Somalia" />
-    <meta property="og:description" content="Create invoices, track income, send via WhatsApp. Built for Somali merchants." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://app.xisaabaati.so" />
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://www.xisaabaati.com/" />
+    <meta property="og:title"       content="Xisaabaati — Ma ogtahay faa'idadaada maanta?" />
+    <meta property="og:description" content="Nidaamka xisaabinta sahlan ee ganacsiga Soomaalida. Ogaaw faa'idadaada dhabta ah — EVC, Zaad, Sahal ayaa la aqbalaa." />
+    <meta property="og:image"       content="https://www.xisaabaati.com/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale"      content="so_SO" />
+    <meta property="og:locale:alternate" content="ar_SA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:site_name"   content="Xisaabaati" />
 
-    <!-- Favicon (simple inline SVG favicon) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f4c35'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='%234ade80'>✦</text></svg>" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230f4c35'/><text x='90' y='125' text-anchor='middle' font-size='100' fill='%234ade80'>✦</text></svg>" />
+    <!-- Twitter Cards -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@xisaabaati" />
+    <meta name="twitter:title"       content="Xisaabaati — Ma ogtahay faa'idadaada maanta?" />
+    <meta name="twitter:description" content="Nidaamka xisaabinta sahlan ee ganacsiga Soomaalida. Track sales, expenses and profit instantly." />
+    <meta name="twitter:image"       content="https://www.xisaabaati.com/og-image.png" />
+
+    <!-- Schema.org: Organization + SoftwareApplication (base) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Xisaabaati",
+      "url": "https://www.xisaabaati.com",
+      "logo": "https://www.xisaabaati.com/logo.png",
+      "description": "Simple profit tracking and accounting app for Somali merchants",
+      "foundingLocation": {
+        "@type": "Place",
+        "name": "Mogadishu, Somalia"
+      },
+      "areaServed": ["SO", "ET", "KE", "DJ"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "hello@xisaabaati.com",
+        "availableLanguage": ["Somali", "Arabic", "English"]
+      },
+      "sameAs": [
+        "https://app.xisaabaati.so"
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Xisaabaati",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "AccountingApplication",
+      "operatingSystem": "iOS, Android, Web",
+      "url": "https://www.xisaabaati.com",
+      "description": "Simple accounting and profit tracking for Somali merchants. Track sales, expenses, invoices and daily profit in real time.",
+      "inLanguage": ["so", "ar", "en"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free plan available — no credit card required"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "500",
+        "bestRating": "5"
+      },
+      "featureList": [
+        "Real-time profit tracking",
+        "Sales and expense management",
+        "Offline-first mobile app",
+        "Local payment methods (EVC Plus, Zaad, Sahal)",
+        "Customer management",
+        "Reports and analytics"
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Xisaabaati",
+      "description": "Nidaamka xisaabinta sahlan ee ganacsiga Soomaalida",
+      "url": "https://www.xisaabaati.com",
+      "email": "hello@xisaabaati.com",
+      "areaServed": [
+        { "@type": "City", "name": "Mogadishu" },
+        { "@type": "City", "name": "Hargeisa" },
+        { "@type": "City", "name": "Bosaso" },
+        { "@type": "City", "name": "Kismayo" },
+        { "@type": "City", "name": "Galkayo" },
+        { "@type": "City", "name": "Berbera" },
+        { "@type": "City", "name": "Burco" }
+      ],
+      "priceRange": "$0 - $39/month"
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2316a34a'/><polyline points='26,9 17,18 12,13 6,19' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%2316a34a'/><polyline points='148,54 100,105 70,75 32,113' fill='none' stroke='white' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,54 @@
+# Xisaabaati
+
+## What is Xisaabaati?
+Xisaabaati is a simple mobile-first accounting and profit-tracking application built specifically for small merchants in Somalia and the Somali diaspora worldwide.
+
+## Core Promise
+"Know your business profit quickly and clearly." — in Somali, Arabic, and English.
+The Somali headline: "Ma ogtahay inta aad maanta faa'iidday?" (Do you know how much you profited today?)
+
+## Who Uses It
+Small shop owners, restaurant operators, pharmacy owners, clothing stores, and import/export merchants in:
+- Mogadishu (Muqdisho), Somalia
+- Hargeisa (Hargeysa), Somaliland
+- Bosaso (Boosaaso), Puntland
+- Kismayo (Kismaayo), Jubaland
+- Galkayo (Galkacyo), Mudug
+- Berbera, Somaliland
+- Burco, Somaliland
+- Somali diaspora (US, UK, UAE, Canada, Finland, Sweden, Kenya, Ethiopia)
+
+## Key Features
+- Real-time profit calculation after every sale
+- Sales recording (product, price, quantity — 10 seconds per sale)
+- Daily expense tracking (fuel, rent, stock purchases)
+- Customer management with debt tracking
+- Weekly and monthly profit reports
+- Offline-first (works without internet)
+- Local payment methods: EVC Plus, Zaad, Sahal, Western Union (no credit card needed)
+- Multi-language: Somali (default), Arabic, English
+
+## Pricing
+- Free: 20 sales/month — $0
+- Starter: Unlimited sales — $9/month ($6.30/month billed annually)
+- Basic: Invoices + advanced reports — $19/month ($13.30/month billed annually)
+- Pro: Multi-user + export + dedicated manager — $39/month ($27.30/month billed annually)
+
+## Technology
+- React 18 + Vite SPA
+- Firebase Authentication + Firestore (real-time)
+- Deployed on Vercel (www.xisaabaati.com)
+- Progressive Web App — installable on iOS and Android
+
+## Languages
+- Somali (so) — PRIMARY language, default
+- Arabic (ar) — secondary
+- English (en) — secondary
+
+## Contact
+- Email: hello@xisaabaati.com
+- WhatsApp: +252 61 000 0000
+- Website: https://www.xisaabaati.com
+
+## Mission
+To give every Somali merchant — from Mogadishu's Bakaaraha market to Hargeisa's Waaheen market — the same financial clarity that large businesses have, in their own language, on their phone, offline.
