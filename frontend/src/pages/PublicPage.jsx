@@ -1,6 +1,6 @@
 // PublicPage.jsx — Dynamic CMS-powered public page (About / Vision / Privacy / Terms)
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -121,7 +121,11 @@ const Footer = () => (
 )
 
 export default function PublicPage() {
-  const { slug } = useParams()
+  const { slug: slugParam } = useParams()
+  const location = useLocation()
+  // Routes are /about, /vision, /privacy, /terms (no :slug param in path),
+  // so fall back to extracting from pathname when useParams() returns nothing.
+  const slug = slugParam || location.pathname.replace(/^\//, '').split('/')[0]
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
 
