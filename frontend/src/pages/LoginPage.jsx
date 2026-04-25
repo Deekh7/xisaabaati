@@ -76,7 +76,7 @@ export default function LoginPage() {
       dir={dir}
       className="auth-page"
       style={{ fontFamily: lang === 'ar' ? "'Noto Sans Arabic',sans-serif" : 'system-ui,-apple-system,sans-serif' }}
-      onKeyDown={(e) => e.key === 'Enter' && !isLogin ? null : handleSubmit()}
+      onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
     >
       <div className="auth-box" style={{ maxWidth: isLogin ? 400 : 520, width: '100%' }}>
         {/* Logo */}
