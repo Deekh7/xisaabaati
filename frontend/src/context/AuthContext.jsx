@@ -1,51 +1,69 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile,
-} from 'firebase/auth'
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
-import { auth, db, isFirebaseConfigured } from '../config/firebase'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 
 const AuthContext = createContext()
+
+// Firebase modules are loaded lazily so they don't block the landing page.
+// We cache the resolved modules here so we only import once.
+let _firebase = null
+async function getFirebase() {
+  if (_firebase) return _firebase
+  const [
+    { auth, db, isFirebaseConfigured },
+    { onAuthStateChanged, createUserWithEmailAndPassword,
+      signInWithEmailAndPassword, signOut, updateProfile },
+    { doc, setDoc, getDoc, updateDoc },
+  ] = await Promise.all([
+    import('../config/firebase'),
+    import('firebase/auth'),
+    import('firebase/firestore'),
+  ])
+  _firebase = { auth, db, isFirebaseConfigured,
+    onAuthStateChanged, createUserWithEmailAndPassword,
+    signInWithEmailAndPassword, signOut, updateProfile,
+    doc, setDoc, getDoc, updateDoc }
+  return _firebase
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const unsubRef = useRef(null)
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
-      setLoading(false)
-      return
-    }
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser)
-      if (firebaseUser && db) {
-        try {
-          const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
-          if (snap.exists()) setProfile(snap.data())
-        } catch (err) {
-          console.error('[auth] profile fetch failed:', err)
-        }
-      } else {
-        setProfile(null)
+    // Import Firebase AFTER first render — keeps it out of the critical path
+    getFirebase().then(({ auth, db, isFirebaseConfigured, onAuthStateChanged, doc, getDoc }) => {
+      if (!isFirebaseConfigured || !auth) {
+        setLoading(false)
+        return
       }
-      setLoading(false)
-    })
-    return unsub
+      unsubRef.current = onAuthStateChanged(auth, async (firebaseUser) => {
+        setUser(firebaseUser)
+        if (firebaseUser && db) {
+          try {
+            const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
+            if (snap.exists()) setProfile(snap.data())
+          } catch (err) {
+            console.error('[auth] profile fetch failed:', err)
+          }
+        } else {
+          setProfile(null)
+        }
+        setLoading(false)
+      })
+    }).catch(() => setLoading(false))
+
+    return () => { unsubRef.current?.() }
   }, [])
 
-  const requireFirebase = () => {
+  const signup = async (email, password, displayName, businessName, businessType = 'shop') => {
+    const {
+      auth, db, isFirebaseConfigured,
+      createUserWithEmailAndPassword, updateProfile, doc, setDoc,
+    } = await getFirebase()
     if (!isFirebaseConfigured || !auth || !db) {
       throw new Error('Firebase is not configured. Set VITE_FIREBASE_* env vars in .env.')
     }
-  }
-
-  const signup = async (email, password, displayName, businessName, businessType = 'shop') => {
-    requireFirebase()
     const cred = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(cred.user, { displayName: displayName || businessName })
 
@@ -77,9 +95,11 @@ export function AuthProvider({ children }) {
   }
 
   const login = async (email, password) => {
-    requireFirebase()
+    const { auth, db, isFirebaseConfigured, signInWithEmailAndPassword, doc, getDoc } = await getFirebase()
+    if (!isFirebaseConfigured || !auth) {
+      throw new Error('Firebase is not configured. Set VITE_FIREBASE_* env vars in .env.')
+    }
     const cred = await signInWithEmailAndPassword(auth, email, password)
-    // refresh profile after login
     if (db) {
       try {
         const snap = await getDoc(doc(db, 'users', cred.user.uid))
@@ -90,21 +110,24 @@ export function AuthProvider({ children }) {
   }
 
   const updateProfileData = async (data) => {
-    if (!user || !db) return
+    if (!user) return
+    const { db, doc, updateDoc } = await getFirebase()
+    if (!db) return
     await updateDoc(doc(db, 'users', user.uid), data)
     setProfile((prev) => ({ ...prev, ...data }))
   }
 
-  const logout = () => {
-    if (!auth) return Promise.resolve()
+  const logout = async () => {
+    const { auth, signOut } = await getFirebase()
+    if (!auth) return
     return signOut(auth)
   }
 
-  const isAdmin = profile?.role === 'admin'
-  // Normalise legacy 'shop' → 'retail' so all 8 canonical types are consistent
-  const rawType = profile?.businessType || 'retail'
+  const isAdmin    = profile?.role === 'admin'
+  const rawType    = profile?.businessType || 'retail'
   const businessType = rawType === 'shop' ? 'retail' : rawType
-  const planKey = profile?.planKey || profile?.plan || 'free'
+  const planKey    = profile?.planKey || profile?.plan || 'free'
+  const isFirebaseConfigured = Boolean(import.meta.env.VITE_FIREBASE_API_KEY)
 
   return (
     <AuthContext.Provider value={{
