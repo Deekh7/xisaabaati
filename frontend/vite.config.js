@@ -31,10 +31,25 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor:   ['react', 'react-dom', 'react-router-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          charts:   ['recharts'],
+        manualChunks(id) {
+          // Core React runtime — always needed
+          if (id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router-dom/') ||
+              id.includes('node_modules/scheduler/')) {
+            return 'vendor'
+          }
+          // Firebase — lazy-loaded with the app pages, not the landing page
+          if (id.includes('node_modules/firebase/') ||
+              id.includes('node_modules/@firebase/')) {
+            return 'firebase'
+          }
+          // Charts — only loaded in reports page
+          if (id.includes('node_modules/recharts') ||
+              id.includes('node_modules/d3-') ||
+              id.includes('node_modules/victory-')) {
+            return 'charts'
+          }
         },
       },
     },

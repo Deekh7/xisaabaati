@@ -114,7 +114,7 @@ export function AuthProvider({ children }) {
       isAdmin, businessType, planKey,
       isFirebaseConfigured,
     }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
