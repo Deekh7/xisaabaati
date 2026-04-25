@@ -36,7 +36,7 @@
   --radius-xl: 24px;
 
   --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-ar: 'Noto Sans Arabic', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-ar: 'Noto Sans Arabic', system-ui, sans-serif;
 
   --topbar-h: 56px;
   --bottomnav-h: 64px;

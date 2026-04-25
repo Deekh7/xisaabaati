@@ -10,7 +10,7 @@ const DARK = '#0f172a'
 const CONTENT = {
   so: {
     dir: 'ltr',
-    font: "'IBM Plex Sans Arabic',system-ui,sans-serif",
+    font: "'Noto Sans Arabic',system-ui,sans-serif",
     navLogin: 'Gal',
     badge: '🚀 500+ ganacsade ayaa adeegsanaya Xisaabaati Soomaaliya',
     heroH1a: 'Ma ogtahay inta aad',
@@ -376,6 +376,8 @@ export default function LandingPage() {
           </button>
         </div>
       </nav>
+
+      <main>
 
       {/* ══════════════════════════════════════════════════════════════
           HERO
@@ -890,6 +892,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
+      </main>
     </div>
   )
 }
