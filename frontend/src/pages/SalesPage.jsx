@@ -129,7 +129,7 @@ export default function SalesPage() {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          {t('addSale')}
+          {businessType === 'restaurant' ? t('quickSale') : t('addSale')}
         </button>
       </div>
 
@@ -145,8 +145,8 @@ export default function SalesPage() {
         </div>
       </div>
 
-      {/* Quick tap grid for restaurant */}
-      {businessType === 'restaurant' && products.length > 0 && (
+      {/* Quick tap grid — shown for all product-based business types */}
+      {!['services', 'wholesale'].includes(businessType) && products.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
             {t('quickSale')}

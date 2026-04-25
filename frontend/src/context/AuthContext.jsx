@@ -101,7 +101,9 @@ export function AuthProvider({ children }) {
   }
 
   const isAdmin = profile?.role === 'admin'
-  const businessType = profile?.businessType || 'shop'
+  // Normalise legacy 'shop' → 'retail' so all 8 canonical types are consistent
+  const rawType = profile?.businessType || 'retail'
+  const businessType = rawType === 'shop' ? 'retail' : rawType
   const planKey = profile?.planKey || profile?.plan || 'free'
 
   return (

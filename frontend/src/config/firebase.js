@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,15 +18,22 @@ const firebaseConfig = {
 export const isFirebaseConfigured =
   Boolean(firebaseConfig.apiKey) && Boolean(firebaseConfig.projectId);
 
-let app = null;
+let app  = null;
 let auth = null;
-let db = null;
+let db   = null;
 
 if (isFirebaseConfigured) {
   try {
-    app = initializeApp(firebaseConfig);
+    app  = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    db = getFirestore(app);
+    // Persistent local cache — enables full offline support.
+    // Data is cached in IndexedDB; reads work offline and writes
+    // are queued and auto-synced when connectivity is restored.
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[firebase] init failed:', err);

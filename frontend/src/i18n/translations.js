@@ -18,11 +18,17 @@ export const translations = {
     loginError: 'Incorrect email or password. Please try again.',
     signupError: 'Could not create account. Please try again.',
 
-    // Business types
-    shop: 'Shop',
+    // Business types (all 8)
+    grocery:    'Grocery / Bakhaaro',
+    retail:     'Retail / Shop',
+    wholesale:  'Wholesale',
+    pharmacy:   'Pharmacy',
     restaurant: 'Restaurant',
-    pharmacy: 'Pharmacy',
-    services: 'Services',
+    services:   'Services',
+    salon:      'Salon / Beauty',
+    other:      'Other',
+    // legacy alias
+    shop: 'Shop',
 
     // Navigation
     dashboard: 'Dashboard',
@@ -227,10 +233,15 @@ export const translations = {
     loginError: 'Email ama furaha khalad. Isku day mar kale.',
     signupError: 'Akoon lama abuuri karin',
 
-    shop: 'Dukaanka',
+    grocery:    'Bakhaaro',
+    retail:     'Dukaan',
+    wholesale:  'Xoolo-guri',
+    pharmacy:   'Farmaashiye',
     restaurant: 'Makhaayad',
-    pharmacy: 'Farmashiyaha',
-    services: 'Adeegyo',
+    services:   'Adeegyo',
+    salon:      'Saloon',
+    other:      'Kale',
+    shop: 'Dukaanka',
 
     dashboard: 'Guriga',
     sales: 'Iibka',
@@ -420,10 +431,15 @@ export const translations = {
     loginError: 'البريد أو كلمة المرور غير صحيحة. حاول مجدداً.',
     signupError: 'تعذّر إنشاء الحساب',
 
-    shop: 'دكان',
+    grocery:    'بقالة',
+    retail:     'تجزئة / دكان',
+    wholesale:  'جملة',
+    pharmacy:   'صيدلية',
     restaurant: 'مطعم',
-    pharmacy: 'صيدلية',
-    services: 'خدمات',
+    services:   'خدمات',
+    salon:      'صالون / تجميل',
+    other:      'أخرى',
+    shop: 'دكان',
 
     dashboard: 'الرئيسية',
     sales: 'المبيعات',

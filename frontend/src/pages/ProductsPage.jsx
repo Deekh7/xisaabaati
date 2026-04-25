@@ -57,12 +57,18 @@ function ConfirmDialog({ open, message, onYes, onNo, t }) {
 
 const emptyForm = { name: '', cost: '', price: '', stock: '', category: '' }
 
-// Per-business-type category suggestions
+// Per-business-type category suggestions — covers all 8 active types + legacy aliases
 const BUSINESS_CATEGORIES = {
-  shop:        ['ملابس', 'أحذية', 'مواد غذائية', 'إلكترونيات', 'مستلزمات منزلية', 'مستحضرات تجميل', 'ألعاب', 'أخرى'],
-  restaurant:  ['وجبات رئيسية', 'مقبلات', 'مشروبات', 'حلويات', 'وجبات سريعة', 'إفطار', 'مأكولات بحرية', 'أخرى'],
+  grocery:     ['مواد غذائية', 'مشروبات', 'منظفات', 'خضروات وفواكه', 'ألبان وبيض', 'معلبات', 'حبوب وبقوليات', 'أخرى'],
+  retail:      ['ملابس', 'أحذية', 'إكسسوارات', 'إلكترونيات', 'مستلزمات منزلية', 'مستحضرات تجميل', 'ألعاب', 'أخرى'],
+  wholesale:   ['بضائع عامة', 'مواد غذائية بالجملة', 'ملابس بالجملة', 'إلكترونيات', 'مواد بناء', 'مواد خام', 'أخرى'],
   pharmacy:    ['أدوية', 'فيتامينات ومكملات', 'إسعافات أولية', 'عناية شخصية', 'أجهزة طبية', 'أطفال', 'أخرى'],
-  services:    ['إصلاح', 'استشارات', 'توصيل', 'تنظيف', 'تصميم', 'تعليم', 'أخرى'],
+  restaurant:  ['وجبات رئيسية', 'مقبلات', 'مشروبات', 'حلويات', 'وجبات سريعة', 'إفطار', 'مأكولات بحرية', 'أخرى'],
+  services:    ['إصلاح', 'استشارات', 'توصيل', 'تنظيف', 'تصميم', 'تعليم', 'دعم فني', 'أخرى'],
+  salon:       ['قص الشعر', 'صباغة الشعر', 'تمليس وكيراتين', 'مانيكير وباديكير', 'عناية بالوجه', 'مساج', 'أخرى'],
+  other:       ['منتجات', 'خدمات', 'أخرى'],
+  // Legacy aliases for accounts created before the type rename
+  shop:        ['ملابس', 'أحذية', 'مواد غذائية', 'إلكترونيات', 'مستلزمات منزلية', 'مستحضرات تجميل', 'أخرى'],
   electronics: ['هواتف', 'حواسيب', 'إكسسوارات', 'صوتيات', 'كاميرات', 'شبكات', 'أخرى'],
   importexport:['بضائع مستوردة', 'بضائع تصديرية', 'جملة', 'مواد خام', 'أخرى'],
 }
@@ -81,7 +87,8 @@ export default function ProductsPage() {
   const [saving, setSaving]       = useState(false)
   const [confirm, setConfirm]     = useState(null)
 
-  const showStock = businessType !== 'services'
+  // Services don't need stock tracking (they sell time/labour, not physical units)
+  const showStock = !['services'].includes(businessType)
   const s = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const openAdd = () => { setEditingId(null); setForm(emptyForm); setShowForm(true) }
@@ -276,13 +283,13 @@ export default function ProductsPage() {
               }}
             >
               <option value="">{t('category')}...</option>
-              {(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.shop).map(cat => (
+              {(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.retail || BUSINESS_CATEGORIES.other).map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
               <option value="__custom__">✏️ كتابة يدوية...</option>
             </select>
             {/* Show text input if category isn't in the predefined list */}
-            {form.category !== '' && !(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.shop).includes(form.category) && (
+            {form.category !== '' && !(BUSINESS_CATEGORIES[businessType] || BUSINESS_CATEGORIES.retail || BUSINESS_CATEGORIES.other).includes(form.category) && (
               <input
                 style={{ ...inp, marginTop:8 }}
                 value={form.category}
